@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>焚き火ASMR動画をYouTubeに自動投稿するシステムを作った話 | Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+<style>
+  /* ── Blog nav override ── */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--nav-height);
+    background: rgba(28, 24, 16, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-border);
+    z-index: 80;
+    display: flex; align-items: center;
+  }
+  .nav__inner {
+    width: 100%; max-width: 1200px; margin: 0 auto;
+    padding: 0 28px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav__logo {
+    font-family: var(--display);
+    font-size: 20px; color: var(--ink);
+    letter-spacing: 0.02em; text-transform: uppercase;
+    text-decoration: none;
+  }
+  .nav__links { display: flex; gap: 24px; list-style: none; }
+  .nav__links a {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--ink-dim); letter-spacing: 0.1em;
+    text-transform: uppercase; text-decoration: none;
+    transition: color .2s;
+  }
+  .nav__links a:hover { color: var(--glow); }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid var(--glow-soft);
+    color: var(--glow);
+  }
+  .tag--sm { font-size: 9px; padding: 2px 8px; }
+  .btn { display: inline-block; padding: 12px 24px; text-decoration: none; }
+  .btn--outline {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    border: 1px solid var(--line-2); color: var(--ink-mid);
+    transition: border-color .25s, color .25s;
+  }
+  .btn--outline:hover { border-color: var(--glow); color: var(--glow); }
+  .pipeline {
+    display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap;
+    background: var(--color-surface);
+    border-radius: 10px;
+    padding: 16px 20px; margin: 20px 0;
+    font-size: 0.85rem; color: var(--color-text-mid);
+  }
+  .pipeline__step {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: 500; color: var(--color-text);
+    white-space: nowrap;
+  }
+  .pipeline__arrow { color: var(--color-text-muted); }
+</style>
+  <style>
+    .article-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: calc(var(--nav-height) + 48px) 24px 80px;
+    }
+    .article-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: var(--color-text-muted);
+      text-decoration: none;
+      margin-bottom: 40px;
+      transition: color var(--transition);
+    }
+    .article-back:hover { color: var(--color-text); }
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .article-date { font-size: 0.82rem; color: var(--color-text-muted); }
+    .article-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 20px;
+      background: var(--color-surface2);
+      color: var(--color-text-mid);
+    }
+    .article-title {
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 12px;
+      color: var(--color-text);
+    }
+    .article-lead {
+      font-size: 1.05rem;
+      color: var(--color-text-mid);
+      line-height: 1.75;
+      margin-bottom: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .article-hero {
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 40px;
+      background: linear-gradient(160deg, #0d0d0d 0%, #1a0a00 60%, #2a1000 100%);
+      height: 280px;
+      position: relative;
+    }
+    .article-body h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 40px 0 12px;
+      padding-left: 14px;
+      border-left: 3px solid var(--color-text);
+    }
+    .article-body h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 28px 0 8px;
+      color: var(--color-text);
+    }
+    .article-body p {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--color-text-mid);
+      margin-bottom: 16px;
+    }
+    .article-body ul, .article-body ol {
+      padding-left: 1.4em;
+      margin-bottom: 16px;
+    }
+    .article-body li {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--color-text-mid);
+      margin-bottom: 4px;
+    }
+    .article-body code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85em;
+      background: var(--color-surface2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--color-text);
+    }
+    .article-body pre {
+      background: #0f1117;
+      border-radius: 10px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+    .article-body pre code {
+      background: none;
+      padding: 0;
+      font-size: 0.85rem;
+      color: #a8d8a8;
+      line-height: 1.7;
+    }
+    .article-body table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin: 20px 0;
+    }
+    .article-body th {
+      background: var(--color-surface);
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      border: 1px solid var(--color-border);
+    }
+    .article-body td {
+      padding: 10px 14px;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-mid);
+      line-height: 1.6;
+    }
+    .article-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--color-border);
+    }
+    .article-footer {
+      margin-top: 48px;
+      text-align: center;
+    }
+    .pipeline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      background: var(--color-surface);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 20px 0;
+      font-size: 0.85rem;
+      color: var(--color-text-mid);
+    }
+    .pipeline__step {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-weight: 500;
+      color: var(--color-text);
+      white-space: nowrap;
+    }
+    .pipeline__arrow {
+      color: var(--color-text-muted);
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+<canvas class="blog-canvas-left"  id="blog-canvas-left"  aria-hidden="true"></canvas>
+<canvas class="blog-canvas-right" id="blog-canvas-right" aria-hidden="true"></canvas>
+<!-- CURSOR -->
+<div class="cur" id="cursor" aria-hidden="true"></div>
+
+
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../index.html" class="nav__logo">Portfolio</a>
+      <ul class="nav__links">
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#works">Works</a></li>
+        <li><a href="../index.html#blog">Blog</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="article-wrap">
+
+    <a href="../index.html#blog" class="article-back">← ブログ一覧に戻る</a>
+
+    <div class="article-meta">
+      <span class="article-date">2026.05.25</span>
+      <span class="article-tag">Python</span>
+      <span class="article-tag">自動化</span>
+      <span class="article-tag">YouTube API</span>
+    </div>
+
+    <h1 class="article-title">焚き火ASMR動画をYouTubeに自動投稿するシステムを作った話</h1>
+    <p class="article-lead">
+      焚き火の動画クリップとASMR音声・BGMを自動で合成し、メタデータ・サムネイルを生成してYouTubeに投稿するまでを
+      Pythonで完全自動化しました。毎晩23時にMacのlaunchdから自動実行される仕組みも込みで。
+    </p>
+
+    <div class="article-hero">
+      <svg viewBox="0 0 720 280" preserveAspectRatio="xMidYMid slice"
+           style="position:absolute;inset:0;width:100%;height:100%"
+           xmlns="http://www.w3.org/2000/svg">
+        <!-- 炎のグロー背景 -->
+        <radialGradient id="fireGlow" cx="35%" cy="70%" r="45%">
+          <stop offset="0%" stop-color="#ff6a00" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="#ff6a00" stop-opacity="0"/>
+        </radialGradient>
+        <rect width="720" height="280" fill="url(#fireGlow)"/>
+
+        <!-- サムネイルプレビュー -->
+        <rect x="24" y="24" width="220" height="130" rx="8" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <!-- 炎シルエット -->
+        <ellipse cx="134" cy="120" rx="40" ry="18" fill="rgba(255,100,0,0.15)"/>
+        <path d="M110,118 Q118,90 134,78 Q140,95 148,88 Q155,72 162,80 Q158,100 158,118Z" fill="rgba(255,120,0,0.5)"/>
+        <path d="M120,118 Q125,98 134,88 Q143,98 148,118Z" fill="rgba(255,180,0,0.6)"/>
+        <!-- サムネイルテキスト -->
+        <rect x="24" y="130" width="220" height="24" rx="0" fill="rgba(0,0,0,0.55)"/>
+        <text x="134" y="146" fill="rgba(255,255,255,0.85)" font-size="9" font-family="sans-serif" text-anchor="middle">焚き火の音 1時間 | Lo-fi ASMR</text>
+        <!-- 再生時間バッジ -->
+        <rect x="196" y="104" width="36" height="14" rx="3" fill="rgba(0,0,0,0.75)"/>
+        <text x="214" y="114" fill="white" font-size="8" font-family="monospace" text-anchor="middle">1:02:34</text>
+
+        <!-- パイプライン矢印 -->
+        <text x="258" y="92" fill="rgba(255,140,0,0.8)" font-size="22" font-family="monospace">→</text>
+
+        <!-- パイプラインボックス群 -->
+        <!-- 動画処理 -->
+        <rect x="290" y="30" width="110" height="46" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,140,0,0.3)" stroke-width="1"/>
+        <text x="345" y="50" fill="rgba(255,180,80,0.9)" font-size="9" font-family="monospace" text-anchor="middle">VIDEO</text>
+        <text x="345" y="64" fill="rgba(255,255,255,0.45)" font-size="8" font-family="monospace" text-anchor="middle">normalize + loop</text>
+
+        <!-- 音声ミックス -->
+        <rect x="290" y="88" width="110" height="46" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,140,0,0.3)" stroke-width="1"/>
+        <text x="345" y="108" fill="rgba(255,180,80,0.9)" font-size="9" font-family="monospace" text-anchor="middle">AUDIO</text>
+        <text x="345" y="122" fill="rgba(255,255,255,0.45)" font-size="8" font-family="monospace" text-anchor="middle">ASMR + BGM mix</text>
+
+        <!-- メタデータ -->
+        <rect x="290" y="146" width="110" height="46" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,140,0,0.3)" stroke-width="1"/>
+        <text x="345" y="166" fill="rgba(255,180,80,0.9)" font-size="9" font-family="monospace" text-anchor="middle">METADATA</text>
+        <text x="345" y="180" fill="rgba(255,255,255,0.45)" font-size="8" font-family="monospace" text-anchor="middle">title + tags + thumb</text>
+
+        <!-- 矢印 -->
+        <text x="412" y="92" fill="rgba(255,140,0,0.8)" font-size="22" font-family="monospace">→</text>
+
+        <!-- YouTubeアップロードボックス -->
+        <rect x="440" y="30" width="130" height="162" rx="8" fill="rgba(255,0,0,0.08)" stroke="rgba(255,60,60,0.35)" stroke-width="1"/>
+        <text x="505" y="58" fill="rgba(255,80,80,0.9)" font-size="11" font-family="monospace" font-weight="bold" text-anchor="middle">YouTube</text>
+        <text x="505" y="74" fill="rgba(255,255,255,0.35)" font-size="8" font-family="monospace" text-anchor="middle">Data API v3</text>
+
+        <!-- アップロード進捗バー -->
+        <rect x="460" y="88" width="90" height="6" rx="3" fill="rgba(255,255,255,0.08)"/>
+        <rect x="460" y="88" width="90" height="6" rx="3" fill="rgba(255,80,80,0.6)"/>
+        <text x="505" y="108" fill="rgba(255,255,255,0.5)" font-size="8" font-family="monospace" text-anchor="middle">100%</text>
+
+        <!-- ステータス -->
+        <rect x="460" y="118" width="90" height="16" rx="4" fill="rgba(34,197,94,0.15)"/>
+        <text x="505" y="130" fill="#4ade80" font-size="8" font-family="monospace" font-weight="bold" text-anchor="middle">PUBLISHED ✓</text>
+
+        <!-- privacy -->
+        <rect x="460" y="142" width="90" height="16" rx="4" fill="rgba(255,255,255,0.05)"/>
+        <text x="505" y="154" fill="rgba(255,255,255,0.4)" font-size="8" font-family="monospace" text-anchor="middle">privacy: public</text>
+
+        <!-- cron表示 -->
+        <rect x="440" y="206" width="130" height="28" rx="6" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <text x="505" y="224" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace" text-anchor="middle">launchd: 23:00 daily</text>
+
+        <!-- ステータスバー -->
+        <rect x="0" y="254" width="720" height="26" fill="rgba(0,0,0,0.45)"/>
+        <rect x="12" y="261" width="80" height="13" rx="3" fill="rgba(255,100,0,0.2)"/>
+        <text x="52" y="271" fill="rgba(255,150,50,0.9)" font-size="9" font-family="monospace" text-anchor="middle">FFmpeg 8.1.1</text>
+        <rect x="100" y="261" width="80" height="13" rx="3" fill="rgba(255,255,255,0.06)"/>
+        <text x="140" y="271" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace" text-anchor="middle">Python 3.9</text>
+        <text x="708" y="271" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace" text-anchor="end">60~70min / auto</text>
+      </svg>
+    </div>
+
+    <div class="article-body">
+
+      <h2>なぜ作ったのか</h2>
+      <p>
+        焚き火・ASMR系のYouTubeチャンネルは、一度仕組みを作ってしまえば手間なく運営できる構造に向いています。
+        「動画生成→メタデータ作成→投稿」の全工程を自動化すれば、人が介入しなくてもチャンネルが動き続けます。
+        自動化の恩恵を最も受けやすいジャンルとして取り組みました。
+      </p>
+
+      <h2>パイプライン全体像</h2>
+      <p>1回の実行で以下がすべて自動で行われます。</p>
+
+      <div class="pipeline">
+        <span class="pipeline__step">動画クリップ</span>
+        <span class="pipeline__arrow">→</span>
+        <span class="pipeline__step">1080p正規化</span>
+        <span class="pipeline__arrow">→</span>
+        <span class="pipeline__step">ループ延長</span>
+        <span class="pipeline__arrow">→</span>
+        <span class="pipeline__step">ASMR+BGMミックス</span>
+        <span class="pipeline__arrow">→</span>
+        <span class="pipeline__step">サムネイル生成</span>
+        <span class="pipeline__arrow">→</span>
+        <span class="pipeline__step">YouTube投稿</span>
+      </div>
+
+      <h2>技術スタック</h2>
+      <table>
+        <tr><th>役割</th><th>技術</th></tr>
+        <tr><td>動画処理・音声ミックス</td><td>FFmpeg 8.1.1（subprocess経由）</td></tr>
+        <tr><td>サムネイル加工</td><td>Pillow（フレーム抽出・グラデーション・テキスト描画）</td></tr>
+        <tr><td>メタデータ生成</td><td>Pythonテンプレート（タイトル5種×用途×ジャンルの組み合わせ）</td></tr>
+        <tr><td>YouTube投稿</td><td>YouTube Data API v3（OAuth2・resumable upload）</td></tr>
+        <tr><td>定期実行</td><td>macOS launchd（毎晩23:00）</td></tr>
+        <tr><td>エラー通知</td><td>Discord Webhook</td></tr>
+      </table>
+
+      <h2>実装で工夫した点</h2>
+
+      <h3>動画尺のランダム化</h3>
+      <p>
+        毎回同じ尺の動画を投稿するとYouTubeの自動投稿検知に引っかかるリスクがあります。
+        <code>--hours 1</code> を指定した場合でも実際の尺は60〜70分のランダムになるよう実装しました。
+      </p>
+      <pre><code>base_seconds = int(args.hours * 3600)
+target_seconds = base_seconds + random.randint(0, 600)  # +0〜10分</code></pre>
+
+      <h3>ASMR + BGMの2トラックミックス</h3>
+      <p>
+        焚き火のパチパチ音（ASMR）を主役にしつつ、Lo-fiなどのBGMを背後に流すミックスをFFmpegの
+        <code>amix</code> フィルターで実装。音量バランスは <code>.env</code> で調整可能にしました。
+      </p>
+      <pre><code>[0:a]volume=1.0[asmr];[1:a]volume=0.35[bgm];
+[asmr][bgm]amix=inputs=2:duration=longest</code></pre>
+
+      <h3>サムネイルの自動フォントサイズ調整</h3>
+      <p>
+        タイトルの長さによってテキストが不自然に改行されないよう、44pxから28pxまで2pxずつ試して
+        2行以内に収まる最大フォントサイズを自動選択する仕組みを実装しました。
+      </p>
+
+      <h3>BGMのランダム選曲</h3>
+      <p>
+        <code>assets/bgm/</code> フォルダに複数の楽曲を入れておくと、毎回ランダムで1曲を選択します。
+        現在15曲をローテーションしており、動画ごとに雰囲気が変わります。
+      </p>
+
+      <h2>ディレクトリ構成</h2>
+      <pre><code>campfire_auto_post/
+├── main.py              # オーケストレーター（CLI）
+├── src/
+│   ├── video_generator.py   # 動画正規化・ループ
+│   ├── audio_processor.py   # ASMR+BGMミックス
+│   ├── video_composer.py    # フルパイプライン
+│   ├── metadata_generator.py # タイトル・概要欄・タグ生成
+│   ├── thumbnail_creator.py  # サムネイル加工
+│   └── youtube_uploader.py  # YouTube API投稿
+├── assets/
+│   ├── video/   # 焚き火動画クリップ
+│   ├── audio/   # ASMR音声
+│   └── bgm/     # BGM（15曲）
+└── cron_setup.sh  # launchd登録スクリプト</code></pre>
+
+      <h2>やってみてわかったこと</h2>
+      <ul>
+        <li>YouTube APIのOAuth2認証はチャンネル作成・電話番号認証が事前に必要で、セットアップが一番手間だった</li>
+        <li>カスタムサムネイルのアップロードもチャンネル認証が必要（新チャンネルあるある）</li>
+        <li>FFmpegは非常に強力で、動画ループ・音声ミックス・フレーム抽出がコマンド1本で完結する</li>
+        <li>Pillowの絵文字描画は非対応なため、タイトルテキストから絵文字を除去する処理が必要だった</li>
+      </ul>
+
+      <h2>今後やりたいこと</h2>
+      <ul>
+        <li>複数チャンネルへの同時投稿対応</li>
+        <li>YouTube Studioのアナリティクスを取得して再生数の多いBGMジャンルに自動最適化</li>
+        <li>クラウド（GCP）での実行に移行してMacの起動状態に依存しない構成へ</li>
+      </ul>
+
+    </div>
+
+    <div class="article-tags">
+      <span class="tag tag--sm">Python</span>
+      <span class="tag tag--sm">FFmpeg</span>
+      <span class="tag tag--sm">YouTube Data API</span>
+      <span class="tag tag--sm">Pillow</span>
+      <span class="tag tag--sm">自動化</span>
+      <span class="tag tag--sm">ASMR</span>
+      <span class="tag tag--sm">個人開発</span>
+    </div>
+
+    <div class="article-footer">
+      <a href="../index.html#blog" class="btn btn--outline">← ブログ一覧に戻る</a>
+    </div>
+
+  </div>
+
+
+<script>
+(function cursor(){
+  const cur = document.getElementById('cursor');
+  if (!cur) return;
+  let cx = innerWidth / 2, cy = innerHeight / 2;
+  let mx = cx, my = cy;
+  addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  addEventListener('mousedown', () => cur.classList.add('is-press'));
+  addEventListener('mouseup',   () => cur.classList.remove('is-press'));
+  (function loop(){
+    cx += (mx - cx) * 0.28;
+    cy += (my - cy) * 0.28;
+    cur.style.transform = `translate(${cx}px, ${cy}px) translate(-50%,-50%)`;
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => cur.classList.add('is-hover'));
+    el.addEventListener('mouseleave', () => cur.classList.remove('is-hover'));
+  });
+})();
+</script>
+<script src="../blog-side-canvas.js" defer></script>
+</body>
+</html>

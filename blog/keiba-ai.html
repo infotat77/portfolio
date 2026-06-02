@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PythonとLightGBMで競馬予測AIを作った話 | Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+<style>
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--nav-height);
+    background: rgba(10, 16, 10, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-border);
+    z-index: 80;
+    display: flex; align-items: center;
+  }
+  .nav__inner {
+    width: 100%; max-width: 1200px; margin: 0 auto;
+    padding: 0 28px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav__logo {
+    font-family: var(--display);
+    font-size: 20px; color: var(--ink);
+    letter-spacing: 0.02em; text-transform: uppercase;
+    text-decoration: none;
+  }
+  .nav__links { display: flex; gap: 24px; list-style: none; }
+  .nav__links a {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--ink-dim); letter-spacing: 0.1em;
+    text-transform: uppercase; text-decoration: none;
+    transition: color .2s;
+  }
+  .nav__links a:hover { color: var(--glow); }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid var(--glow-soft);
+    color: var(--glow);
+  }
+  .tag--sm { font-size: 9px; padding: 2px 8px; }
+  .btn { display: inline-block; padding: 12px 24px; text-decoration: none; }
+  .btn--outline {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    border: 1px solid var(--line-2); color: var(--ink-mid);
+    transition: border-color .25s, color .25s;
+  }
+  .btn--outline:hover { border-color: var(--glow); color: var(--glow); }
+  .pipeline {
+    display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap;
+    background: var(--color-surface);
+    border-radius: 10px;
+    padding: 16px 20px; margin: 20px 0;
+    font-size: 0.85rem; color: var(--color-text-mid);
+  }
+  .pipeline__step {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: 500; color: var(--color-text);
+    white-space: nowrap;
+  }
+  .pipeline__arrow { color: var(--color-text-muted); }
+  .article-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: calc(var(--nav-height) + 48px) 24px 80px;
+  }
+  .article-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    margin-bottom: 40px;
+    transition: color var(--transition);
+  }
+  .article-back:hover { color: var(--color-text); }
+  .article-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .article-date { font-size: 0.82rem; color: var(--color-text-muted); }
+  .article-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 20px;
+    background: var(--color-surface2);
+    color: var(--color-text-mid);
+  }
+  .article-title {
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 800;
+    line-height: 1.3;
+    margin-bottom: 12px;
+    color: var(--color-text);
+  }
+  .article-lead {
+    font-size: 1.05rem;
+    color: var(--color-text-mid);
+    line-height: 1.75;
+    margin-bottom: 40px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .article-hero {
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 40px;
+    background: linear-gradient(160deg, #0a0f0a 0%, #0d1a05 60%, #152300 100%);
+    height: 280px;
+    position: relative;
+  }
+  .article-body h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 40px 0 12px;
+    padding-left: 14px;
+    border-left: 3px solid var(--color-text);
+  }
+  .article-body h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 28px 0 8px;
+    color: var(--color-text);
+  }
+  .article-body p {
+    font-size: 0.95rem;
+    line-height: 1.85;
+    color: var(--color-text-mid);
+    margin-bottom: 16px;
+  }
+  .article-body ul, .article-body ol {
+    padding-left: 1.4em;
+    margin-bottom: 16px;
+  }
+  .article-body li {
+    font-size: 0.95rem;
+    line-height: 1.85;
+    color: var(--color-text-mid);
+    margin-bottom: 4px;
+  }
+  .article-body code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.85em;
+    background: var(--color-surface2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--color-text);
+  }
+  .article-body pre {
+    background: #0f1117;
+    border-radius: 10px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    margin: 20px 0;
+  }
+  .article-body pre code {
+    background: none;
+    padding: 0;
+    font-size: 0.85rem;
+    color: #a8d8a8;
+    line-height: 1.7;
+  }
+  .article-body table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin: 20px 0;
+  }
+  .article-body th {
+    background: var(--color-surface);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    border: 1px solid var(--color-border);
+  }
+  .article-body td {
+    padding: 10px 14px;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-mid);
+    line-height: 1.6;
+  }
+  .article-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--color-border);
+  }
+  .article-footer {
+    margin-top: 48px;
+    text-align: center;
+  }
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 24px 0;
+  }
+  .metric {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .metric__val {
+    font-family: var(--mono, monospace);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #ffc300;
+    display: block;
+  }
+  .metric__label {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    margin-top: 4px;
+    display: block;
+  }
+</style>
+</head>
+<body>
+<canvas class="blog-canvas-left"  id="blog-canvas-left"  aria-hidden="true"></canvas>
+<canvas class="blog-canvas-right" id="blog-canvas-right" aria-hidden="true"></canvas>
+<div class="cur" id="cursor" aria-hidden="true"></div>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <a href="../index.html" class="nav__logo">Portfolio</a>
+    <ul class="nav__links">
+      <li><a href="../index.html#works">Works</a></li>
+      <li><a href="../index.html#notes">Notes</a></li>
+      <li><a href="../index.html#contact">Hire</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="article-wrap">
+
+  <a href="../index.html#notes" class="article-back">← Notes 一覧に戻る</a>
+
+  <div class="article-meta">
+    <span class="article-date">2026.05.27</span>
+    <span class="article-tag">Python</span>
+    <span class="article-tag">機械学習</span>
+    <span class="article-tag">LightGBM</span>
+  </div>
+
+  <h1 class="article-title">PythonとLightGBMで競馬予測AIを作った話</h1>
+  <p class="article-lead">
+    JRAの過去レース結果・オッズ・ラップタイムを含む約160万行のデータをLightGBM / CatBoost / XGBoostで学習し、
+    馬の勝率を予測するシステムを作りました。Streamlitで予想印と回収率シミュレーションを見られるWebアプリまで一気通貫で。
+  </p>
+
+  <div class="article-hero">
+    <svg viewBox="0 0 720 280" preserveAspectRatio="xMidYMid slice"
+         style="position:absolute;inset:0;width:100%;height:100%"
+         xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="keibaGlow" cx="50%" cy="60%" r="55%">
+          <stop offset="0%" stop-color="#ffc300" stop-opacity="0.2"/>
+          <stop offset="100%" stop-color="#ffc300" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="720" height="280" fill="url(#keibaGlow)"/>
+
+      <!-- 予想印エリア -->
+      <rect x="24" y="24" width="160" height="200" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,195,0,0.25)" stroke-width="1"/>
+      <text x="104" y="48" fill="rgba(255,195,0,0.7)" font-size="10" font-family="monospace" text-anchor="middle">出走馬リスト</text>
+      <!-- 予想印行 -->
+      <text x="40" y="74"  fill="rgba(255,195,0,0.9)" font-size="12" font-family="monospace">◎</text>
+      <text x="60" y="74"  fill="rgba(255,255,255,0.7)" font-size="9" font-family="sans-serif">ディープインパクト</text>
+      <text x="172" y="74" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace" text-anchor="end">42.1%</text>
+      <text x="40" y="98"  fill="rgba(255,255,255,0.7)" font-size="12" font-family="monospace">○</text>
+      <text x="60" y="98"  fill="rgba(255,255,255,0.55)" font-size="9" font-family="sans-serif">オルフェーヴル</text>
+      <text x="172" y="98" fill="rgba(255,255,255,0.35)" font-size="9" font-family="monospace" text-anchor="end">28.6%</text>
+      <text x="40" y="122" fill="rgba(255,255,255,0.55)" font-size="12" font-family="monospace">▲</text>
+      <text x="60" y="122" fill="rgba(255,255,255,0.45)" font-size="9" font-family="sans-serif">ゴールドシップ</text>
+      <text x="172" y="122" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace" text-anchor="end">16.3%</text>
+      <text x="40" y="146" fill="rgba(255,255,255,0.4)" font-size="12" font-family="monospace">△</text>
+      <text x="60" y="146" fill="rgba(255,255,255,0.35)" font-size="9" font-family="sans-serif">キタサンブラック</text>
+      <text x="172" y="146" fill="rgba(255,255,255,0.25)" font-size="9" font-family="monospace" text-anchor="end">8.2%</text>
+      <text x="40" y="170" fill="rgba(255,255,255,0.25)" font-size="12" font-family="monospace">×</text>
+      <text x="60" y="170" fill="rgba(255,255,255,0.25)" font-size="9" font-family="sans-serif">アーモンドアイ</text>
+      <text x="172" y="170" fill="rgba(255,255,255,0.18)" font-size="9" font-family="monospace" text-anchor="end">4.8%</text>
+
+      <!-- 矢印 -->
+      <text x="198" y="128" fill="rgba(255,195,0,0.7)" font-size="22" font-family="monospace">→</text>
+
+      <!-- 回収率グラフ -->
+      <rect x="228" y="24" width="220" height="200" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,195,0,0.2)" stroke-width="1"/>
+      <text x="338" y="48" fill="rgba(255,195,0,0.6)" font-size="10" font-family="monospace" text-anchor="middle">回収率シミュレーション</text>
+      <!-- グラフ軸 -->
+      <line x1="245" y1="195" x2="435" y2="195" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+      <line x1="245" y1="65"  x2="245" y2="195" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+      <!-- 100%ライン -->
+      <line x1="245" y1="130" x2="435" y2="130" stroke="rgba(255,195,0,0.2)" stroke-width="1" stroke-dasharray="4,4"/>
+      <text x="240" y="133" fill="rgba(255,195,0,0.4)" font-size="8" font-family="monospace" text-anchor="end">100%</text>
+      <!-- 曲線（ジグザグしながら上昇） -->
+      <polyline
+        points="245,170 268,162 291,175 314,155 337,148 360,158 383,140 406,133 429,128"
+        fill="none" stroke="rgba(255,195,0,0.7)" stroke-width="2"/>
+      <circle cx="429" cy="128" r="3" fill="#ffc300"/>
+      <text x="435" y="128" fill="rgba(255,195,0,0.8)" font-size="9" font-family="monospace">82%</text>
+
+      <!-- 矢印 -->
+      <text x="462" y="128" fill="rgba(255,195,0,0.7)" font-size="22" font-family="monospace">→</text>
+
+      <!-- モデル性能ボックス -->
+      <rect x="492" y="24" width="204" height="200" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,195,0,0.25)" stroke-width="1"/>
+      <text x="594" y="48" fill="rgba(255,195,0,0.7)" font-size="10" font-family="monospace" text-anchor="middle">モデル性能</text>
+      <!-- AUC -->
+      <rect x="508" y="60" width="172" height="44" rx="6" fill="rgba(255,195,0,0.08)"/>
+      <text x="594" y="79" fill="rgba(255,195,0,0.9)" font-size="18" font-family="monospace" font-weight="bold" text-anchor="middle">0.8303</text>
+      <text x="594" y="96" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace" text-anchor="middle">AUC</text>
+      <!-- 的中率 -->
+      <rect x="508" y="114" width="80" height="44" rx="6" fill="rgba(255,255,255,0.05)"/>
+      <text x="548" y="133" fill="rgba(255,255,255,0.8)" font-size="15" font-family="monospace" font-weight="bold" text-anchor="middle">33.4%</text>
+      <text x="548" y="150" fill="rgba(255,255,255,0.35)" font-size="9" font-family="monospace" text-anchor="middle">的中率</text>
+      <!-- 回収率 -->
+      <rect x="600" y="114" width="80" height="44" rx="6" fill="rgba(255,255,255,0.05)"/>
+      <text x="640" y="133" fill="rgba(255,255,255,0.8)" font-size="15" font-family="monospace" font-weight="bold" text-anchor="middle">82.0%</text>
+      <text x="640" y="150" fill="rgba(255,255,255,0.35)" font-size="9" font-family="monospace" text-anchor="middle">回収率</text>
+      <!-- モデル数 -->
+      <text x="594" y="185" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace" text-anchor="middle">LightGBM · CatBoost · XGBoost</text>
+      <text x="594" y="200" fill="rgba(255,255,255,0.2)" font-size="9" font-family="monospace" text-anchor="middle">1,600,000 rows · 1986–2021</text>
+
+      <!-- ステータスバー -->
+      <rect x="0" y="254" width="720" height="26" fill="rgba(0,0,0,0.45)"/>
+      <rect x="12" y="261" width="88" height="13" rx="3" fill="rgba(255,195,0,0.15)"/>
+      <text x="56" y="271" fill="rgba(255,195,0,0.7)" font-size="9" font-family="monospace" text-anchor="middle">LightGBM 4.x</text>
+      <rect x="108" y="261" width="72" height="13" rx="3" fill="rgba(255,255,255,0.05)"/>
+      <text x="144" y="271" fill="rgba(255,255,255,0.35)" font-size="9" font-family="monospace" text-anchor="middle">Python 3.9</text>
+      <text x="708" y="271" fill="rgba(255,255,255,0.25)" font-size="9" font-family="monospace" text-anchor="end">Streamlit WebApp</text>
+    </svg>
+  </div>
+
+  <div class="article-body">
+
+    <h2>なぜ作ったのか</h2>
+    <p>
+      競馬予想サイトは「根拠が不透明」「過去の的中実績が検証できない」ものが多い。
+      ならば自分でデータを集めてモデルを作り、再現性のある予測基盤を持つほうが面白い。
+      機械学習の実践の場としても、160万行規模のデータと明確な評価指標（的中率・回収率）が揃う競馬はうってつけでした。
+    </p>
+
+    <h2>データと前処理</h2>
+    <p>
+      使用したのは1986〜2021年のJRAレース結果・オッズ・ラップタイム・コーナー通過順の4CSV。
+      前処理後の特徴量は約160万行になります。
+    </p>
+
+    <div class="pipeline">
+      <span class="pipeline__step">生CSV（4種）</span>
+      <span class="pipeline__arrow">→</span>
+      <span class="pipeline__step">結合・欠損処理</span>
+      <span class="pipeline__arrow">→</span>
+      <span class="pipeline__step">特徴量エンジニアリング</span>
+      <span class="pipeline__arrow">→</span>
+      <span class="pipeline__step">features.csv（160万行）</span>
+      <span class="pipeline__arrow">→</span>
+      <span class="pipeline__step">モデル学習</span>
+    </div>
+
+    <p>
+      学習データは1986〜2018年、検証データは2019〜2021年と時系列で分割しました。
+      レース結果を「1着 or それ以外」の2値分類問題として定式化しています。
+    </p>
+
+    <h2>使用したモデル</h2>
+    <table>
+      <tr><th>モデル</th><th>特徴</th></tr>
+      <tr><td>LightGBM</td><td>学習速度が速くチューニングの試行回数を稼ぎやすい。ベースラインとして採用</td></tr>
+      <tr><td>CatBoost</td><td>カテゴリ変数（競馬場・馬名・騎手）の扱いが得意でそのまま投入できる</td></tr>
+      <tr><td>XGBoost</td><td>汎化性能の補完目的。オッズなし版も含めて合計6モデルを学習</td></tr>
+    </table>
+    <p>
+      オッズを特徴量に含めた版と含めない版の両方を用意しました。
+      オッズは市場の集合知であり強力な予測因子ですが、「オッズなしでどこまで予測できるか」も検証したかったためです。
+    </p>
+
+    <h2>モデル性能（検証データ: 2019〜2021年）</h2>
+
+    <div class="metrics">
+      <div class="metric">
+        <span class="metric__val">0.8303</span>
+        <span class="metric__label">AUC</span>
+      </div>
+      <div class="metric">
+        <span class="metric__val">33.4%</span>
+        <span class="metric__label">的中率</span>
+      </div>
+      <div class="metric">
+        <span class="metric__val">82.0%</span>
+        <span class="metric__label">回収率</span>
+      </div>
+    </div>
+
+    <p>
+      回収率82%はJRAの控除率（約25%）の壁があるため100%を下回っています。
+      ただしランダム予測（的中率は出走頭数の逆数）に対してAUC 0.83はモデルとして機能している証拠です。
+    </p>
+
+    <h2>StreamlitでWebアプリ化</h2>
+    <p>
+      予測結果をCLIで見るだけでは使いにくいので、Streamlitでインタラクティブなダッシュボードを作りました。
+    </p>
+    <ul>
+      <li>サイドバーで「年 → 開催場所 → レース番号」を選択するとその出走馬の予想印・勝率が表示される</li>
+      <li>◎（本命）〜×（その他）の予想印を自動付与</li>
+      <li>画面下部に検証期間（2019〜2021年）の回収率推移グラフをプロット</li>
+    </ul>
+    <pre><code># 予想印の付与ロジック
+rank_to_mark = {1: '◎', 2: '○', 3: '▲', 4: '△'}
+df['mark'] = df['rank'].map(rank_to_mark).fillna('×')</code></pre>
+
+    <h2>実装で工夫した点</h2>
+
+    <h3>Optunaでハイパーパラメータ探索</h3>
+    <p>
+      LightGBMとXGBoostはOptunaで100trial以上探索しました。
+      最適パラメータは <code>best_params.json</code> に保存して再現できるようにしています。
+    </p>
+
+    <h3>オッズありなし2バージョン</h3>
+    <p>
+      オッズは情報として強力すぎるため「純粋なデータ力」を測るためオッズなし版を別途学習。
+      モデルファイルは <code>lgbm_model.pkl</code> と <code>lgbm_model_no_odds.pkl</code> の2本体制です。
+    </p>
+
+    <h3>SQLiteで予測結果を管理</h3>
+    <p>
+      毎回CSVを再読み込みするのは非効率なので、前処理済みデータと予測ログを <code>keiba.db</code>（SQLite）に格納。
+      cronで週次更新する <code>weekly_update.py</code> も作りました。
+    </p>
+
+    <h2>ディレクトリ構成</h2>
+    <pre><code>keiba_ai/
+├── data/
+│   ├── raw/           # 生CSV（1986〜2021年）
+│   └── processed/     # 前処理済みデータ
+├── models/
+│   ├── lgbm_model.pkl
+│   ├── lgbm_model_no_odds.pkl
+│   ├── catboost_model.pkl
+│   ├── xgb_model.pkl
+│   ├── best_params.json
+│   └── best_params_no_odds.json
+├── src/
+│   ├── preprocess.py     # 特徴量エンジニアリング
+│   ├── train.py          # 学習（LightGBM）
+│   ├── train_catboost.py
+│   ├── train_xgb.py
+│   ├── tune.py           # Optuna探索
+│   ├── predict.py        # 予測
+│   ├── evaluate.py       # AUC・的中率・回収率算出
+│   ├── weekly_update.py  # 週次データ更新
+│   └── db.py             # SQLite操作
+├── app/
+│   └── streamlit_app.py  # Webダッシュボード
+└── keiba.db</code></pre>
+
+    <h2>やってみてわかったこと</h2>
+    <ul>
+      <li>競馬の予測は「勝馬を当てる」より「回収率を最大化する」ことが目標と気づいた（的中率より賭け方の設計が大事）</li>
+      <li>CatBoostはカテゴリ変数のエンコードが不要で実装がシンプルになった</li>
+      <li>Optunaの並列探索（<code>n_jobs=-1</code>）は大規模データで体感できるほど速い</li>
+      <li>時系列データは「未来のデータで学習して過去を予測しない」よう分割に注意が必要</li>
+      <li>回収率82%は「負け越しているが市場平均よりはマシ」という微妙なポジション</li>
+    </ul>
+
+    <h2>今後やりたいこと</h2>
+    <ul>
+      <li>ニューラルネット（TabNet）との比較実験</li>
+      <li>複勝・馬連など馬券種別ごとの回収率最適化</li>
+      <li>スクレイピングでリアルタイムデータ取得し当日レースに適用</li>
+    </ul>
+
+  </div>
+
+  <div class="article-tags">
+    <span class="tag tag--sm">Python</span>
+    <span class="tag tag--sm">LightGBM</span>
+    <span class="tag tag--sm">CatBoost</span>
+    <span class="tag tag--sm">XGBoost</span>
+    <span class="tag tag--sm">Optuna</span>
+    <span class="tag tag--sm">Streamlit</span>
+    <span class="tag tag--sm">SQLite</span>
+    <span class="tag tag--sm">機械学習</span>
+    <span class="tag tag--sm">個人開発</span>
+  </div>
+
+  <div class="article-footer">
+    <a href="../index.html#notes" class="btn btn--outline">← Notes 一覧に戻る</a>
+  </div>
+
+</div>
+
+<script>
+(function cursor(){
+  const cur = document.getElementById('cursor');
+  if (!cur) return;
+  let cx = innerWidth / 2, cy = innerHeight / 2;
+  let mx = cx, my = cy;
+  addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  addEventListener('mousedown', () => cur.classList.add('is-press'));
+  addEventListener('mouseup',   () => cur.classList.remove('is-press'));
+  (function loop(){
+    cx += (mx - cx) * 0.28;
+    cy += (my - cy) * 0.28;
+    cur.style.transform = `translate(${cx}px, ${cy}px) translate(-50%,-50%)`;
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => cur.classList.add('is-hover'));
+    el.addEventListener('mouseleave', () => cur.classList.remove('is-hover'));
+  });
+})();
+</script>
+<script src="../blog-side-canvas.js" defer></script>
+</body>
+</html>

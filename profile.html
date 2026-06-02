@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TaT — Profile / 2026</title>
+<meta name="description" content="TaT のプロフィール。テレマ→IT 法人営業 8 年→Claude Code で夜だけコードを書く二足の草鞋エンジニア。業務委託受付中。" />
+<meta name="theme-color" content="#0a0a0f" />
+<!-- OGP -->
+<meta property="og:type" content="profile" />
+<meta property="og:title" content="TaT — Profile / 2026" />
+<meta property="og:description" content="営業 8 年の現場経験と Claude Code で夜だけプロダクトを作る。業務委託受付中。" />
+<meta property="og:url" content="https://tatsuya-portfolio.vercel.app/profile.html" />
+<meta property="og:image" content="https://tatsuya-portfolio.vercel.app/og.png" />
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="TaT — Profile / 2026" />
+<meta name="twitter:description" content="営業 8 年の現場経験と Claude Code で夜だけプロダクトを作る。" />
+<meta name="twitter:image" content="https://tatsuya-portfolio.vercel.app/og.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+<style>
+  /* ── profile page specific ── */
+  .profile-hero {
+    padding: 120px 28px 72px;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 32px;
+    align-items: end;
+  }
+  .profile-hero__id {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    line-height: 1.9;
+  }
+  .profile-hero__id em {
+    display: block;
+    color: var(--green); font-style: normal;
+    font-size: 12px;
+    font-family: var(--mono);
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .profile-hero__body { max-width: 900px; }
+  .profile-hero__name {
+    font-family: var(--sans);
+    font-size: clamp(3.5rem, 12vw, 10rem);
+    font-weight: 700;
+    line-height: 0.9;
+    letter-spacing: -0.035em;
+    color: var(--ink);
+    margin: 0 0 28px;
+  }
+  .profile-hero__tagline {
+    font-family: var(--sans);
+    font-style: italic;
+    font-size: clamp(1.1rem, 2vw, 1.6rem);
+    line-height: 1.5;
+    color: var(--ink-2);
+    max-width: 600px;
+  }
+  .profile-hero__tagline em {
+    font-style: normal;
+    background: var(--green-soft);
+    padding: 0 4px;
+  }
+  .profile-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color .2s;
+    margin-top: 40px;
+  }
+  .profile-back:hover { color: var(--ink-2); }
+  @media (max-width: 960px) {
+    .profile-hero {
+      grid-template-columns: 1fr;
+      gap: 20px;
+      padding: 88px 20px 52px;
+    }
+    .profile-hero__name { font-size: 14vw; }
+  }
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cur" id="cursor" aria-hidden="true"></div>
+
+<!-- NAVIGATION -->
+<header class="chrome" role="banner">
+  <a href="index.html" class="chrome__brand">TaT</a>
+  <nav class="chrome__nav" aria-label="メインナビゲーション">
+    <a href="#about">About</a>
+    <a href="#skills">Stack</a>
+    <a href="index.html">Works</a>
+  </nav>
+  <button class="chrome__burger" aria-expanded="false" aria-controls="drawer-nav" aria-label="メニューを開く">≡</button>
+</header>
+
+<!-- DRAWER -->
+<div class="drawer" id="drawer-nav" aria-hidden="true" role="dialog" aria-modal="true" aria-label="ナビゲーション">
+  <div class="drawer__inner">
+    <button class="drawer__close" aria-label="メニューを閉じる">✕</button>
+    <nav class="drawer__nav" aria-label="ドロワーナビゲーション">
+      <a href="#about">About</a>
+      <a href="#skills">Stack</a>
+      <a href="index.html">Works</a>
+    </nav>
+  </div>
+</div>
+
+<!-- PROFILE HERO -->
+<section class="profile-hero">
+  <div class="profile-hero__id">
+    <em>Profile</em>
+    TaT · 30 yo<br/>
+    Tokyo · JP<br/>
+    <a class="profile-back" href="index.html">← Works に戻る</a>
+  </div>
+  <div class="profile-hero__body">
+    <h1 class="profile-hero__name">TaT</h1>
+    <p class="profile-hero__tagline">
+      個人開発に勤しんでいる30代営業職の会社員。
+    </p>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="sect" id="about">
+  <div class="about-wrap">
+    <div class="sect__id"><em>— 01</em>章<br/>About</div>
+    <div>
+      <div class="about__copy">
+        <p>
+          <em>Claude Code</em> を2026年5月から利用開始し、その日の夜から今日にかけて要件定義から実装まで奮闘中。
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section class="sect" id="skills">
+  <div class="stack-wrap">
+    <div class="sect__id"><em>— 02</em>章<br/>Stack</div>
+    <div>
+      <h2 class="sect__title">Stack.</h2>
+
+      <div class="stack" style="margin-top:64px">
+        <div class="stack__row">
+          <div class="stack__cat">Frontend</div>
+          <div class="stack__items">
+            <span>HTML</span><span>CSS</span><span>JavaScript</span><span>TypeScript</span>
+            <span>React</span><span>Next.js</span><span>Tailwind CSS</span>
+          </div>
+        </div>
+        <div class="stack__row">
+          <div class="stack__cat">Backend</div>
+          <div class="stack__items">
+            <span>Node.js</span><span>Python</span><span>Flask</span>
+            <span>SQL</span><span>Supabase</span><span>Vercel</span>
+          </div>
+        </div>
+        <div class="stack__row">
+          <div class="stack__cat">AI / 自動化</div>
+          <div class="stack__items">
+            <span>Claude Code</span><span>OpenAI API</span>
+            <span>FFmpeg</span><span>BeautifulSoup</span>
+            <span>Notion API</span><span>launchd / cron</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer class="foot">
+  <div class="foot__bottom">
+    <span>© 2026 TaT · Tokyo, JP &nbsp;·&nbsp; <a href="index.html" style="color:var(--ink-2)">← portfolio</a></span>
+    <span class="foot__sig">made at night.</span>
+  </div>
+</footer>
+
+<script>
+  /* cursor only — no loader on profile page */
+  (function cursor(){
+    const cur = document.getElementById('cursor');
+    if (!cur) return;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) return;
+    let mx = innerWidth/2, my = innerHeight/2, cx = mx, cy = my;
+    addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    addEventListener('mousedown', () => cur.classList.add('is-press'));
+    addEventListener('mouseup',   () => cur.classList.remove('is-press'));
+    document.addEventListener('focusin', e => {
+      const rect = e.target.getBoundingClientRect();
+      mx = rect.left + rect.width / 2;
+      my = rect.top + rect.height / 2;
+    });
+    (function loop(){
+      cx += (mx - cx) * 0.28;
+      cy += (my - cy) * 0.28;
+      cur.style.transform = `translate(${cx}px, ${cy}px) translate(-50%,-50%)`;
+      requestAnimationFrame(loop);
+    })();
+    document.querySelectorAll('a, button, .stack__row, .event').forEach(el => {
+      el.addEventListener('mouseenter', () => cur.classList.add('is-hover'));
+      el.addEventListener('mouseleave', () => cur.classList.remove('is-hover'));
+    });
+  })();
+
+  /* hamburger drawer */
+  (function nav(){
+    const burger = document.querySelector('.chrome__burger');
+    const drawer = document.getElementById('drawer-nav');
+    if (!burger || !drawer) return;
+    const getFocusable = () => [...drawer.querySelectorAll('a, button, [tabindex]:not([tabindex="-1"])')];
+    function open() {
+      drawer.classList.add('is-open');
+      drawer.removeAttribute('aria-hidden');
+      burger.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+      const items = getFocusable();
+      if (items.length) items[0].focus();
+    }
+    function close() {
+      drawer.classList.remove('is-open');
+      drawer.setAttribute('aria-hidden', 'true');
+      burger.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      burger.focus();
+    }
+    burger.addEventListener('click', () => drawer.classList.contains('is-open') ? close() : open());
+    document.addEventListener('keydown', e => {
+      if (!drawer.classList.contains('is-open')) return;
+      if (e.key === 'Escape') { close(); return; }
+      if (e.key === 'Tab') {
+        const items = getFocusable();
+        if (!items.length) return;
+        const first = items[0], last = items[items.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      }
+    });
+    drawer.addEventListener('click', e => { if (e.target === drawer) close(); });
+  })();
+</script>
+</body>
+</html>

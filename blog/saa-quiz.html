@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Next.js + Supabase で AWS SAA クイズアプリを作った話 | Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+<style>
+  /* ── Blog nav override ── */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--nav-height);
+    background: rgba(28, 24, 16, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-border);
+    z-index: 80;
+    display: flex; align-items: center;
+  }
+  .nav__inner {
+    width: 100%; max-width: 1200px; margin: 0 auto;
+    padding: 0 28px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav__logo {
+    font-family: var(--display);
+    font-size: 20px; color: var(--ink);
+    letter-spacing: 0.02em; text-transform: uppercase;
+    text-decoration: none;
+  }
+  .nav__links { display: flex; gap: 24px; list-style: none; }
+  .nav__links a {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--ink-dim); letter-spacing: 0.1em;
+    text-transform: uppercase; text-decoration: none;
+    transition: color .2s;
+  }
+  .nav__links a:hover { color: var(--glow); }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid var(--glow-soft);
+    color: var(--glow);
+  }
+  .tag--sm { font-size: 9px; padding: 2px 8px; }
+  .btn { display: inline-block; padding: 12px 24px; text-decoration: none; }
+  .btn--outline {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    border: 1px solid var(--line-2); color: var(--ink-mid);
+    transition: border-color .25s, color .25s;
+  }
+  .btn--outline:hover { border-color: var(--glow); color: var(--glow); }
+  .pipeline {
+    display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap;
+    background: var(--color-surface);
+    border-radius: 10px;
+    padding: 16px 20px; margin: 20px 0;
+    font-size: 0.85rem; color: var(--color-text-mid);
+  }
+  .pipeline__step {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: 500; color: var(--color-text);
+    white-space: nowrap;
+  }
+  .pipeline__arrow { color: var(--color-text-muted); }
+</style>
+  <style>
+    .article-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: calc(var(--nav-height) + 48px) 24px 80px;
+    }
+    .article-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: var(--color-text-muted);
+      text-decoration: none;
+      margin-bottom: 40px;
+      transition: color var(--transition);
+    }
+    .article-back:hover { color: var(--color-text); }
+
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .article-date { font-size: 0.82rem; color: var(--color-text-muted); }
+    .article-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 20px;
+      background: var(--color-surface2);
+      color: var(--color-text-mid);
+    }
+
+    .article-title {
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 12px;
+      color: var(--color-text);
+    }
+    .article-lead {
+      font-size: 1.05rem;
+      color: var(--color-text-mid);
+      line-height: 1.75;
+      margin-bottom: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .article-hero {
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 40px;
+      background: linear-gradient(160deg, #0f1923 0%, #0d2137 60%, #0a1828 100%);
+      height: 280px;
+      position: relative;
+    }
+
+    .article-body h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 40px 0 12px;
+      padding-left: 14px;
+      border-left: 3px solid var(--color-text);
+    }
+    .article-body h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 28px 0 8px;
+      color: var(--color-text);
+    }
+    .article-body p {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--color-text-mid);
+      margin-bottom: 16px;
+    }
+    .article-body ul, .article-body ol {
+      padding-left: 1.4em;
+      margin-bottom: 16px;
+    }
+    .article-body li {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--color-text-mid);
+      margin-bottom: 4px;
+    }
+    .article-body code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85em;
+      background: var(--color-surface2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--color-text);
+    }
+    .article-body pre {
+      background: #0f1117;
+      border-radius: 10px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+    .article-body pre code {
+      background: none;
+      padding: 0;
+      font-size: 0.85rem;
+      color: #a8d8a8;
+      line-height: 1.7;
+    }
+
+    .article-body table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin: 20px 0;
+    }
+    .article-body th {
+      background: var(--color-surface);
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      border: 1px solid var(--color-border);
+    }
+    .article-body td {
+      padding: 10px 14px;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-mid);
+      line-height: 1.6;
+    }
+
+    .article-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .article-footer {
+      margin-top: 48px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<canvas class="blog-canvas-left"  id="blog-canvas-left"  aria-hidden="true"></canvas>
+<canvas class="blog-canvas-right" id="blog-canvas-right" aria-hidden="true"></canvas>
+<!-- CURSOR -->
+<div class="cur" id="cursor" aria-hidden="true"></div>
+
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../index.html" class="nav__logo">Portfolio</a>
+      <ul class="nav__links">
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#works">Works</a></li>
+        <li><a href="../index.html#blog">Blog</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="article-wrap">
+
+    <a href="../index.html#blog" class="article-back">← ブログ一覧に戻る</a>
+
+    <div class="article-meta">
+      <span class="article-date">2026.05.24</span>
+      <span class="article-tag">Next.js</span>
+      <span class="article-tag">Supabase</span>
+      <span class="article-tag">個人開発</span>
+    </div>
+
+    <h1 class="article-title">Next.js + Supabase で AWS SAA クイズアプリを作った話</h1>
+    <p class="article-lead">
+      AWS 認定ソリューションアーキテクト（SAA）の試験勉強をしながら、「どうせなら自分でクイズアプリを作って学ぼう」と思い立ち開発しました。
+      Next.js App Router・Supabase・Google認証・Vercelデプロイまで一気通貫で実装した記録です。
+    </p>
+
+    <!-- ヒーローイラスト -->
+    <div class="article-hero">
+      <svg viewBox="0 0 720 280" preserveAspectRatio="xMidYMid slice"
+           style="position:absolute;inset:0;width:100%;height:100%"
+           xmlns="http://www.w3.org/2000/svg">
+        <!-- グリッド -->
+        <line x1="0" y1="70"  x2="720" y2="70"  stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        <line x1="0" y1="140" x2="720" y2="140" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        <line x1="0" y1="210" x2="720" y2="210" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        <line x1="180" y1="0" x2="180" y2="280" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+        <line x1="360" y1="0" x2="360" y2="280" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+        <line x1="540" y1="0" x2="540" y2="280" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+
+        <!-- クイズカード（左） -->
+        <rect x="32" y="24" width="310" height="178" rx="12" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+        <!-- ヘッダー -->
+        <rect x="44" y="36" width="52" height="18" rx="9" fill="rgba(234,179,8,0.3)"/>
+        <text x="70" y="48" fill="#fbbf24" font-size="9" font-family="sans-serif" font-weight="700" text-anchor="middle">中級</text>
+        <text x="322" y="48" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace" text-anchor="end">7 / 10問</text>
+        <!-- プログレスバー -->
+        <rect x="44" y="60" width="286" height="4" rx="2" fill="rgba(255,255,255,0.08)"/>
+        <rect x="44" y="60" width="200" height="4" rx="2" fill="#3b82f6"/>
+        <!-- 問題文 -->
+        <text x="44" y="84" fill="rgba(255,255,255,0.8)" font-size="10" font-family="sans-serif" font-weight="600">RDSのマルチAZ構成について正しい説明はどれですか？</text>
+        <!-- 選択肢A（正解） -->
+        <rect x="44" y="96" width="286" height="20" rx="6" fill="rgba(34,197,94,0.18)" stroke="rgba(34,197,94,0.5)" stroke-width="1"/>
+        <text x="56" y="109" fill="#4ade80" font-size="9" font-family="monospace" font-weight="700">A</text>
+        <text x="70" y="109" fill="rgba(255,255,255,0.75)" font-size="9" font-family="sans-serif">スタンバイはフェイルオーバー時に自動昇格する</text>
+        <text x="322" y="109" fill="#4ade80" font-size="11" text-anchor="end">✓</text>
+        <!-- 選択肢B -->
+        <rect x="44" y="120" width="286" height="20" rx="6" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <text x="56" y="133" fill="rgba(255,255,255,0.35)" font-size="9" font-family="monospace" font-weight="700">B</text>
+        <text x="70" y="133" fill="rgba(255,255,255,0.4)" font-size="9" font-family="sans-serif">スタンバイへの読み取りトラフィックが可能</text>
+        <!-- 選択肢C -->
+        <rect x="44" y="144" width="286" height="20" rx="6" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <text x="56" y="157" fill="rgba(255,255,255,0.35)" font-size="9" font-family="monospace" font-weight="700">C</text>
+        <text x="70" y="157" fill="rgba(255,255,255,0.4)" font-size="9" font-family="sans-serif">手動でフェイルオーバーを実行する必要がある</text>
+        <!-- 解説 -->
+        <rect x="44" y="168" width="286" height="22" rx="6" fill="rgba(34,197,94,0.08)" stroke="rgba(34,197,94,0.2)" stroke-width="1"/>
+        <text x="56" y="182" fill="rgba(74,222,128,0.7)" font-size="8.5" font-family="sans-serif">✅ 正解！スタンバイは自動フェイルオーバーのみ対応</text>
+
+        <!-- 右パネル：マイページ統計 -->
+        <rect x="364" y="24" width="324" height="178" rx="12" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <text x="526" y="50" fill="rgba(255,255,255,0.5)" font-size="10" font-family="monospace" font-weight="700" text-anchor="middle">MY STATS</text>
+        <!-- 総合正答率 -->
+        <text x="526" y="90" fill="#60a5fa" font-size="36" font-weight="800" font-family="sans-serif" text-anchor="middle">78%</text>
+        <text x="526" y="108" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace" text-anchor="middle">156 / 200問 正解</text>
+        <!-- 難易度バー -->
+        <text x="376" y="130" fill="rgba(255,255,255,0.3)" font-size="8" font-family="monospace">初級</text>
+        <rect x="400" y="123" width="160" height="5" rx="2.5" fill="rgba(255,255,255,0.07)"/>
+        <rect x="400" y="123" width="148" height="5" rx="2.5" fill="#4ade80"/>
+        <text x="564" y="130" fill="rgba(255,255,255,0.3)" font-size="8" font-family="monospace">93%</text>
+        <text x="376" y="148" fill="rgba(255,255,255,0.3)" font-size="8" font-family="monospace">中級</text>
+        <rect x="400" y="141" width="160" height="5" rx="2.5" fill="rgba(255,255,255,0.07)"/>
+        <rect x="400" y="141" width="120" height="5" rx="2.5" fill="#fbbf24"/>
+        <text x="564" y="148" fill="rgba(255,255,255,0.3)" font-size="8" font-family="monospace">75%</text>
+        <text x="376" y="166" fill="rgba(255,255,255,0.3)" font-size="8" font-family="monospace">上級</text>
+        <rect x="400" y="159" width="160" height="5" rx="2.5" fill="rgba(255,255,255,0.07)"/>
+        <rect x="400" y="159" width="96" height="5" rx="2.5" fill="#f87171"/>
+        <text x="564" y="166" fill="rgba(255,255,255,0.3)" font-size="8" font-family="monospace">60%</text>
+        <!-- 合格ライン -->
+        <rect x="400" y="176" width="160" height="14" rx="5" fill="rgba(59,130,246,0.15)"/>
+        <text x="480" y="186" fill="#60a5fa" font-size="8" font-family="monospace" font-weight="700" text-anchor="middle">合格ライン 72% 突破 ✓</text>
+
+        <!-- ステータスバー -->
+        <rect x="0" y="254" width="720" height="26" fill="rgba(0,0,0,0.4)"/>
+        <rect x="12" y="261" width="72" height="13" rx="3" fill="rgba(59,130,246,0.2)"/>
+        <text x="48" y="271" fill="#60a5fa" font-size="9" font-family="monospace" text-anchor="middle">AWS SAA</text>
+        <rect x="92" y="261" width="76" height="13" rx="3" fill="rgba(255,255,255,0.07)"/>
+        <text x="130" y="271" fill="rgba(255,255,255,0.45)" font-size="9" font-family="monospace" text-anchor="middle">103問収録</text>
+        <rect x="176" y="261" width="80" height="13" rx="3" fill="rgba(255,255,255,0.05)"/>
+        <text x="216" y="271" fill="rgba(255,255,255,0.35)" font-size="9" font-family="monospace" text-anchor="middle">Google Auth ✓</text>
+        <text x="708" y="271" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace" text-anchor="end">Next.js 16 + Supabase + Vercel</text>
+      </svg>
+    </div>
+
+    <!-- 本文 -->
+    <div class="article-body">
+
+      <h2>なぜ作ったのか</h2>
+      <p>
+        AWS SAA の試験勉強を始めたとき、市販の参考書や既存の問題サービスを使っていましたが、
+        「自分で問題を設計して実際に動くアプリを作れば、技術の学習と試験勉強を同時に進められる」と考えました。
+        サービスを使う側から作る側になることで、よりAWSの構成を深く理解できるという狙いもありました。
+      </p>
+
+      <h2>技術スタック</h2>
+      <p>モダンなフルスタック構成を採用しました。フロントエンドからDB・認証・デプロイまで一貫して実装しています。</p>
+
+      <table>
+        <tr><th>役割</th><th>技術</th></tr>
+        <tr><td>フレームワーク</td><td>Next.js 16（App Router）</td></tr>
+        <tr><td>言語</td><td>TypeScript</td></tr>
+        <tr><td>スタイリング</td><td>Tailwind CSS + shadcn/ui</td></tr>
+        <tr><td>データベース</td><td>Supabase（PostgreSQL）</td></tr>
+        <tr><td>認証</td><td>Supabase Auth（Google OAuth）</td></tr>
+        <tr><td>デプロイ</td><td>Vercel</td></tr>
+      </table>
+
+      <h2>実装した機能</h2>
+
+      <h3>難易度・出題数のカスタマイズ</h3>
+      <p>
+        初級・中級・上級・すべての4段階と、5問・10問・20問の出題数を組み合わせて選択できます。
+        問題はランダムにシャッフルされるため、同じ設定で何度解いても違う問題が出題されます。
+      </p>
+
+      <h3>解説付きのクイズフロー</h3>
+      <p>
+        選択肢を選ぶと即座に正誤が表示され、正解の色付け（緑・赤）と解説文が表示されます。
+        合格ライン（72%）を意識したスコア表示で、弱点を把握しやすいUI設計にしました。
+      </p>
+
+      <h3>Google ログインと回答履歴</h3>
+      <p>
+        Supabase Auth を使った Google OAuth を実装しました。ログイン中のユーザーは回答が自動保存され、
+        マイページで難易度別の正答率と直近10問の回答履歴を確認できます。
+        未ログインでも問題を解けるため、試験前の手軽な確認にも使えます。
+      </p>
+
+      <h3>103問の問題データ</h3>
+      <p>
+        IAM・S3・EC2・RDS・Aurora・VPC・CloudFront・Lambda・ECS/Fargate・DynamoDB・
+        Kinesis・SQS/SNS・CloudWatch・GuardDuty・WAF・Cognito・Step Functions・
+        Athena・Redshift・DR戦略・コスト最適化・移行戦略など幅広い分野から103問を収録しています。
+      </p>
+
+      <h2>工夫した点</h2>
+
+      <h3>Supabase RLS によるデータ保護</h3>
+      <p>
+        PostgreSQL の Row Level Security（RLS）を設定し、「問題データは全員が読める」「回答履歴は本人のみ参照・保存可能」
+        というアクセス制御を実装しました。SQLポリシーで制御するため、アプリコード側で認証チェックを忘れても
+        DBレベルで保護されます。
+      </p>
+      <pre><code>-- 問題は全員閲覧可
+create policy "問題は全員閲覧可" on questions
+  for select using (true);
+
+-- 回答は本人のみ
+create policy "自分の回答のみ閲覧可" on user_answers
+  for select using (auth.uid() = user_id);</code></pre>
+
+      <h3>Next.js App Router の useSearchParams 対応</h3>
+      <p>
+        Next.js 16 では <code>useSearchParams()</code> を使うコンポーネントを
+        <code>Suspense</code> でラップしないとビルドエラーになります。
+        クイズページと結果ページの両方でこの対応が必要で、コンポーネントを分割して
+        <code>Suspense</code> でラップする設計にしました。
+      </p>
+      <pre><code>export default function QuizPage() {
+  return (
+    &lt;Suspense fallback={&lt;div&gt;読み込み中...&lt;/div&gt;}&gt;
+      &lt;QuizContent /&gt;
+    &lt;/Suspense&gt;
+  )
+}</code></pre>
+
+      <h2>リリース後のセキュリティ改善</h2>
+      <p>
+        Vercel へのデプロイ後、コード全体をセキュリティの観点で見直しました。
+        「動くものを作る」段階から「安全に公開する」段階へのリファクタリングです。
+      </p>
+
+      <h3>正解をクライアントに渡さない設計に変更</h3>
+      <p>
+        最初の実装では、Supabase からクイズの問題データを取得するとき <code>correct_answer</code> フィールドも含めて
+        クライアントに返していました。これだと開発者ツールで通信を確認するだけで全問の正解がわかってしまいます。
+      </p>
+      <p>
+        対策として API ルートを2本追加しました。<code>/api/questions</code> は正解フィールドを除いた
+        <code>PublicQuestion</code> 型のみを返し、<code>/api/check-answer</code> は選択肢をサーバー側で検証して
+        正誤と解説だけをレスポンスします。これにより、クライアントは選択後にはじめて正解を知ることができます。
+      </p>
+      <pre><code>// /api/questions — 正解フィールドを除いて返す
+.select('id, question, choice_a, choice_b, choice_c, choice_d, difficulty')
+
+// /api/check-answer — サーバー側で正誤判定
+const correct = answer === question.correct_answer
+return NextResponse.json({ correct, correctAnswer, explanation })</code></pre>
+
+      <h3>スコアの URL パラメータ渡しをやめた</h3>
+      <p>
+        最初は <code>/result?score=8&total=10</code> のように URL でスコアを渡していました。
+        これだと URL を直接書き換えれば任意のスコアを表示できます（実害はありませんが）。
+        <code>sessionStorage</code> に保存して <code>/result</code> に遷移する方式に変更し、
+        URL から直接アクセスした場合はトップにリダイレクトするようにしました。
+      </p>
+      <pre><code>// クイズ終了時
+sessionStorage.setItem('quizResult', JSON.stringify({ score, total }))
+router.push('/result')
+
+// 結果ページ
+const raw = sessionStorage.getItem('quizResult')
+if (!raw) { router.replace('/'); return }</code></pre>
+
+      <h3>マイページを Server Component に変換</h3>
+      <p>
+        <code>/mypage</code> はログイン必須のページですが、もともと Client Component で
+        <code>useEffect</code> 内で認証チェックをしていました。この実装だと、
+        未ログインユーザーが一瞬コンテンツを見てからリダイレクトされる可能性があります。
+        Server Component に変換し、<code>redirect()</code> でサーバー側で即座に弾くようにしました。
+      </p>
+      <pre><code>export default async function MyPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/')  // サーバー側で即リダイレクト
+  // ...
+}</code></pre>
+
+      <h3>セキュリティヘッダーの追加</h3>
+      <p>
+        <code>next.config.ts</code> に HTTP セキュリティヘッダーを設定しました。
+        クリックジャッキング防止・MIME スニッフィング防止・リファラー情報の制限などを全ルートに適用しています。
+      </p>
+      <pre><code>async headers() {
+  return [{
+    source: '/:path*',
+    headers: [
+      { key: 'X-Frame-Options', value: 'DENY' },
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+    ],
+  }]
+}</code></pre>
+
+      <h3>その他の細かい修正</h3>
+      <ul>
+        <li>URLパラメータ（<code>difficulty</code>・<code>count</code>）を許可リストでバリデーション</li>
+        <li>Supabase クエリの <code>error</code> を無視していた箇所にエラーハンドリングを追加</li>
+        <li>シャッフルを <code>Math.random() - 0.5</code>（分布が偏る）から Fisher-Yates アルゴリズムに変更</li>
+        <li><code>&lt;img&gt;</code> を Next.js の <code>&lt;Image&gt;</code> に変更し、外部ドメインを allowlist で管理</li>
+        <li>Next.js 16 の <code>proxy.ts</code> 規約に合わせて非推奨の <code>middleware.ts</code> を削除</li>
+      </ul>
+
+      <h2>詰まったポイントとデバッグの話</h2>
+
+      <h3>Vercel の環境変数が空になっていた</h3>
+      <p>
+        デプロイ後に友人に試してもらったら「問題が表示されない」と言われました。
+        Supabase のデータや権限設定は問題なく（<code>set local role anon; select count(*) from questions;</code> で103問確認）、
+        原因を探ると Vercel に登録した環境変数の値が空文字になっていました。
+        <code>vercel env pull --environment=production</code> で確認して発覚し、正しい値で再登録・再デプロイして解決しました。
+      </p>
+
+      <h3>Supabase の GRANT 設定</h3>
+      <p>
+        RLS ポリシーで <code>using (true)</code> と書いても、<code>anon</code> ロールへの
+        <code>GRANT SELECT</code> が付与されていないと未ログインユーザーがデータを読めません。
+        スキーマ作成時に以下を追加することで解決しました。
+      </p>
+      <pre><code>GRANT SELECT ON questions TO anon;
+GRANT SELECT ON questions TO authenticated;</code></pre>
+
+      <h3>重複データの削除</h3>
+      <p>
+        SQLファイルを複数回実行してしまい、問題が重複して登録されました。
+        <code>min(uuid)</code> は PostgreSQL では使えないため、<code>row_number()</code> を使った
+        重複削除クエリで解決しました。
+      </p>
+      <pre><code>delete from questions where id in (
+  select id from (
+    select id, row_number() over (
+      partition by question order by created_at
+    ) as rn from questions
+  ) t where rn > 1
+);</code></pre>
+
+      <h2>やってみてわかったこと</h2>
+      <ul>
+        <li>Next.js App Router は Pages Router と設計思想が大きく異なるため、公式ドキュメントを先に読むことが重要</li>
+        <li>Supabase は RLS + GRANT の組み合わせで細かいアクセス制御ができ、Firebase より SQL に近い感覚で扱える</li>
+        <li>Vercel の環境変数は <code>NEXT_PUBLIC_</code> プレフィックスを付けるとビルド時にバンドルされるため、デプロイ前に値を確認する習慣が必要</li>
+        <li>問題を103問自分で設計したことで、AWS の各サービスの用途と違いが体系的に頭に入った</li>
+      </ul>
+
+      <h2>今後やりたいこと</h2>
+      <ul>
+        <li>問題の追加（200問超を目標）</li>
+        <li>弱点分野を自動で出題するアダプティブモード</li>
+        <li>ランキング機能（他ユーザーとスコアを比較）</li>
+      </ul>
+
+    </div>
+
+    <!-- タグ -->
+    <div class="article-tags">
+      <span class="tag tag--sm">Next.js</span>
+      <span class="tag tag--sm">TypeScript</span>
+      <span class="tag tag--sm">Supabase</span>
+      <span class="tag tag--sm">Tailwind CSS</span>
+      <span class="tag tag--sm">Vercel</span>
+      <span class="tag tag--sm">AWS SAA</span>
+      <span class="tag tag--sm">個人開発</span>
+      <span class="tag tag--sm">セキュリティ</span>
+    </div>
+
+    <div class="article-footer">
+      <a href="../index.html#blog" class="btn btn--outline">← ブログ一覧に戻る</a>
+    </div>
+
+  </div>
+
+
+<script>
+(function cursor(){
+  const cur = document.getElementById('cursor');
+  if (!cur) return;
+  let cx = innerWidth / 2, cy = innerHeight / 2;
+  let mx = cx, my = cy;
+  addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  addEventListener('mousedown', () => cur.classList.add('is-press'));
+  addEventListener('mouseup',   () => cur.classList.remove('is-press'));
+  (function loop(){
+    cx += (mx - cx) * 0.28;
+    cy += (my - cy) * 0.28;
+    cur.style.transform = `translate(${cx}px, ${cy}px) translate(-50%,-50%)`;
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => cur.classList.add('is-hover'));
+    el.addEventListener('mouseleave', () => cur.classList.remove('is-hover'));
+  });
+})();
+</script>
+<script src="../blog-side-canvas.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TaT — Portfolio / 2026</title>
+<meta name="description" content="TaT のポートフォリオ。営業 8 年の現場経験と Claude Code を組み合わせ、夜に 4 つのプロダクトを作った二足の草鞋エンジニア。業務委託受付中。" />
+<meta name="theme-color" content="#0a0a0f" />
+<!-- OGP -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="TaT — Portfolio / 2026" />
+<meta property="og:description" content="営業×Claude Code。夜だけプロダクトを作る、業務委託受付中。" />
+<meta property="og:url" content="https://project-410h5.vercel.app/" />
+<meta property="og:image" content="https://project-410h5.vercel.app/og.png" />
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="TaT — Portfolio / 2026" />
+<meta name="twitter:description" content="営業×Claude Code。夜だけプロダクトを作る、業務委託受付中。" />
+<meta name="twitter:image" content="https://project-410h5.vercel.app/og.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- LOADER -->
+<div class="loader" id="loader" aria-live="polite" aria-label="読み込み中">
+  <div class="loader__top">
+    <span>TaT · portfolio · 2026</span>
+    <span>establishing connection…</span>
+    <span>tokyo / jp · JST</span>
+  </div>
+  <div class="loader__center">
+    <div class="loader__name">TaT</div>
+    <div class="loader__bar"><div class="loader__bar-fill" id="loader-fill"></div></div>
+    <div class="loader__counter">loading · <span id="loader-pct">000</span>%</div>
+  </div>
+  <div class="loader__bottom">
+    <span>inter tight · jetbrains mono</span>
+    <span>ready · soon</span>
+  </div>
+</div>
+
+<!-- CURSOR -->
+<div class="cur" id="cursor" aria-hidden="true"></div>
+
+<!-- NAVIGATION -->
+<header class="chrome" role="banner">
+  <a href="#top" class="chrome__brand">TaT</a>
+  <nav class="chrome__nav" aria-label="メインナビゲーション">
+    <a href="#works">Works</a>
+    <a href="#notes">Notes</a>
+    <a href="#contact">Hire</a>
+    <a href="profile.html">Profile</a>
+  </nav>
+  <button class="chrome__burger" aria-expanded="false" aria-controls="drawer-nav" aria-label="メニューを開く">≡</button>
+</header>
+
+<!-- DRAWER -->
+<div class="drawer" id="drawer-nav" aria-hidden="true" role="dialog" aria-modal="true" aria-label="ナビゲーション">
+  <div class="drawer__inner">
+    <button class="drawer__close" aria-label="メニューを閉じる">✕</button>
+    <nav class="drawer__nav" aria-label="ドロワーナビゲーション">
+      <a href="#works">Works</a>
+      <a href="#notes">Notes</a>
+      <a href="#contact">Hire</a>
+      <a href="profile.html">Profile</a>
+    </nav>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero hero--top" id="top" aria-labelledby="hero-name">
+  <canvas class="hero__canvas" id="hero-canvas" aria-hidden="true"></canvas>
+
+  <div class="hero__inner">
+    <div class="hero__eyebrow">Tokyo · JP &nbsp;/&nbsp; Engineer &amp; Sales</div>
+    <h1 class="hero__name" id="hero-name">TaT</h1>
+    <div class="hero__meta">
+      <span>4 products shipped</span>
+      <div class="hero__meta-div"></div>
+      <span>2026</span>
+      <div class="hero__meta-div"></div>
+      <a class="hero__cta" href="#works">View work →</a>
+      <a class="hero__cta hero__cta--hire" href="mailto:info.tat77@gmail.com">業務委託の相談をする →</a>
+    </div>
+  </div>
+</section>
+
+<!-- WORKS -->
+<section class="works" id="works">
+  <div class="works__header">
+    <span class="works__label">Works</span>
+    <span class="works__count">09 projects</span>
+  </div>
+
+  <div class="works__grid">
+
+    <!-- ── FEATURED ROW ── -->
+    <article class="work work--featured" aria-label="AWS SAA Quiz">
+      <div class="work__cover" id="wc-1">
+        <div class="work__cover-overlay">
+          <div class="work__cover-num">W—01 / Quiz</div>
+          <h3 class="work__cover-title">AWS SAA Quiz</h3>
+        </div>
+      </div>
+      <div class="work__body">
+        <p class="work__desc">正解をサーバー側で採点。RLSで回答履歴を本人のみに制限。電車で1問だけ解ける設計。</p>
+        <div class="work__insight">
+          <span class="wi-k">課題</span><span class="wi-v">正解がAPIで全件露出しておりDevToolsで即カンニング可能だった</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">判断</span><span class="wi-v">サーバー側採点API + Supabase RLSで本人のみ履歴参照</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">結果</span><span class="wi-v">SAA 合格 ✓ · 103問収録</span>
+        </div>
+        <div class="work__tags">
+          <span>Next.js</span><span>TypeScript</span><span>Supabase</span><span>Vercel</span>
+        </div>
+        <div class="work__footer">
+          <span class="work__year">2026</span>
+          <div class="work__links">
+            <a href="https://saa-quiz-seven.vercel.app" target="_blank" rel="noopener noreferrer">Open ↗</a>
+            <a href="https://github.com/infotat77/saa-quiz" target="_blank" rel="noopener noreferrer">Code ↗</a>
+            <a href="blog/saa-quiz.html">Note ↗</a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="work work--featured" aria-label="焚き火 YT-bot">
+      <div class="work__cover" id="wc-2">
+        <div class="work__cover-overlay">
+          <div class="work__cover-num">W—02 / Campfire</div>
+          <h3 class="work__cover-title">焚き火 YT-bot</h3>
+        </div>
+      </div>
+      <div class="work__body">
+        <p class="work__desc">FFmpegでASMRをミックスし、毎晩23:00にlaunchdで自動投稿。手動作業ゼロ。</p>
+        <div class="work__insight">
+          <span class="wi-k">課題</span><span class="wi-v">毎日手動エンコード＆アップロードは3日で挫折すると予測</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">判断</span><span class="wi-v">FFmpeg + YouTube API + launchdで完全自動化</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">結果</span><span class="wi-v">稼働3ヶ月 · 手動作業ゼロ継続中</span>
+        </div>
+        <div class="work__tags">
+          <span>Python</span><span>FFmpeg</span><span>YouTube API</span><span>launchd</span>
+        </div>
+        <div class="work__footer">
+          <span class="work__year">2026</span>
+          <div class="work__links">
+            <a href="blog/campfire.html">Note ↗</a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ── SECONDARY ROW ── -->
+    <article class="work work--small" aria-label="Mansion Radar">
+      <div class="work__cover" id="wc-3">
+        <div class="work__cover-overlay">
+          <div class="work__cover-num">W—03 / Radar</div>
+          <h3 class="work__cover-title">Mansion Radar</h3>
+        </div>
+      </div>
+      <div class="work__body">
+        <p class="work__desc">SUUMOのHTMLをパースしNotion・Google Sheetsへ自動同期。Streamlitで坪単価散布図・地図・フィルターを提供する夫婦共有の物件検討システム。</p>
+        <div class="work__insight">
+          <span class="wi-k">課題</span><span class="wi-v">SUUMOを1件ずつスクロールして比較する作業が非効率</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">判断</span><span class="wi-v">HTML保存→パイプライン自動実行→3媒体同期で夫婦共有を実現</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">結果</span><span class="wi-v">64件を一覧化・フィルタリング · 「気になる」ボタンで検討リストを共有</span>
+        </div>
+        <div class="work__tags">
+          <span>Python</span><span>Notion API</span><span>Google Sheets</span><span>Streamlit</span>
+        </div>
+        <div class="work__footer">
+          <span class="work__year">2026</span>
+          <div class="work__links">
+            <a href="blog/mansion-radar.html">Note ↗</a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="work work--small" aria-label="BTC Auto-Trader">
+      <div class="work__cover" id="wc-4">
+        <div class="work__cover-overlay">
+          <div class="work__cover-num">W—04 / BTC bot</div>
+          <h3 class="work__cover-title">BTC Auto-Trader</h3>
+        </div>
+      </div>
+      <div class="work__body">
+        <p class="work__desc">11種のテクニカル指標で機械的に売買。ドライランで30日検証してから本番へ。感情ゼロ。</p>
+        <div class="work__insight">
+          <span class="wi-k">課題</span><span class="wi-v">含み損で「もう少し待てば」と感情判断し損失を拡大させていた</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">判断</span><span class="wi-v">11種の指標で機械的売買 · 30日ドライランで検証後に本番移行</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">結果</span><span class="wi-v">感情取引ゼロ · Web UIからdry-run/live即切替</span>
+        </div>
+        <div class="work__tags">
+          <span>Python</span><span>Flask</span><span>GMO Coin API</span>
+        </div>
+        <div class="work__footer">
+          <span class="work__year">2025</span>
+          <div class="work__links">
+            <a href="blog/btc-bot.html">Note ↗</a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="work work--small" aria-label="Note 投資記事ジェネレーター">
+      <div class="work__cover" id="wc-6">
+        <div class="work__cover-overlay">
+          <div class="work__cover-num">W—06 / Generator</div>
+          <h3 class="work__cover-title">Note 記事ジェネレーター</h3>
+        </div>
+      </div>
+      <div class="work__body">
+        <p class="work__desc">Yahoo!ニュースRSSからトレンドキーワードを取得し、Gemini APIで投資記事を自動生成。毎朝cronで実行。</p>
+        <div class="work__insight">
+          <span class="wi-k">課題</span><span class="wi-v">キーワード選定・執筆・編集で毎回2時間かかりNote更新が続かなかった</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">判断</span><span class="wi-v">RSSでトレンド取得 → Geminiでキーワード選定 → 記事生成まで1コマンド</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">結果</span><span class="wi-v">毎朝9時にcronで完全自動生成 · 手動投稿のみで運用</span>
+        </div>
+        <div class="work__tags">
+          <span>Python</span><span>Gemini API</span><span>RSS</span><span>cron</span>
+        </div>
+        <div class="work__footer">
+          <span class="work__year">2026</span>
+          <div class="work__links">
+            <a href="blog/note-generator.html">Note ↗</a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="work work--small" aria-label="RTX810 セキュリティ強化">
+      <div class="work__cover" id="wc-7">
+        <div class="work__cover-overlay">
+          <div class="work__cover-num">W—07 / Network</div>
+          <h3 class="work__cover-title">RTX810 セキュリティ強化</h3>
+        </div>
+      </div>
+      <div class="work__body">
+        <p class="work__desc">自宅ルーターの脆弱な初期設定を全面見直し。Telnet無効化・SSH有効化・ファイアウォール強化・Tailscale VPN 導入まで一気に対応。</p>
+        <div class="work__insight">
+          <span class="wi-k">課題</span><span class="wi-v">Telnet有効・フィルターなし・管理パスワード1文字という危険な初期状態</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">判断</span><span class="wi-v">SSH化・IP制限・DHCP固定割り当てで管理基盤を整備</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">結果</span><span class="wi-v">Tailscaleで CGNAT 越え VPN 実現 · 安定稼働中</span>
+        </div>
+        <div class="work__tags">
+          <span>YAMAHA RTX810</span><span>SSH</span><span>Tailscale</span><span>ネットワーク</span>
+        </div>
+        <div class="work__footer">
+          <span class="work__year">2026</span>
+          <div class="work__links">
+            <a href="blog/rtx810-security.html">Note ↗</a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="work work--small" aria-label="競馬 AI Predictor">
+      <div class="work__cover" id="wc-8">
+        <div class="work__cover-overlay">
+          <div class="work__cover-num">W—08 / AI</div>
+          <h3 class="work__cover-title">競馬 AI Predictor</h3>
+        </div>
+      </div>
+      <div class="work__body">
+        <p class="work__desc">1986〜2021年のJRAデータ160万行をLightGBM / CatBoost / XGBoostで学習。AUC 0.83、的中率33%を達成。Streamlitで予想印と回収率シミュレーションを可視化。</p>
+        <div class="work__insight">
+          <span class="wi-k">課題</span><span class="wi-v">競馬予想サイトは根拠が不透明で再現性がなく検証できない</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">判断</span><span class="wi-v">自前で特徴量エンジニアリングし3モデル×オッズあり/なしの6モデル体制</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">結果</span><span class="wi-v">AUC 0.8303 · 的中率33.4% · Streamlit WebUI完成</span>
+        </div>
+        <div class="work__tags">
+          <span>Python</span><span>LightGBM</span><span>CatBoost</span><span>Streamlit</span>
+        </div>
+        <div class="work__footer">
+          <span class="work__year">2026</span>
+          <div class="work__links">
+            <a href="blog/keiba-ai.html">Note ↗</a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="work work--small" aria-label="Mac Auto Cleaner">
+      <div class="work__cover" id="wc-9">
+        <div class="work__cover-overlay">
+          <div class="work__cover-num">W—09 / Tool</div>
+          <h3 class="work__cover-title">Mac Auto Cleaner</h3>
+        </div>
+      </div>
+      <div class="work__body">
+        <p class="work__desc">キャッシュ・スクリーンショット・古いインストーラーを毎週日曜に自動削除。.command ファイルでダブルクリック即実行も可能。初回で約 45GB 節約。</p>
+        <div class="work__insight">
+          <span class="wi-k">課題</span><span class="wi-v">気づけばキャッシュ 11GB・campfire 動画 25GB・Downloads 20GB に肥大化</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">判断</span><span class="wi-v">Shell Script + cron + .command で「自動＆手動ワンクリック」を両立</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">結果</span><span class="wi-v">初回 ~45GB 節約 · 毎週日曜 9:00 に自動実行中</span>
+        </div>
+        <div class="work__tags">
+          <span>Shell Script</span><span>cron</span><span>macOS</span><span>自動化</span>
+        </div>
+        <div class="work__footer">
+          <span class="work__year">2026</span>
+          <div class="work__links">
+            <a href="blog/mac-cleaner.html">Note ↗</a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="work work--small" aria-label="This Site (Portfolio)">
+      <div class="work__cover" id="wc-5">
+        <div class="work__cover-overlay">
+          <div class="work__cover-num">W—05 / Portfolio</div>
+          <h3 class="work__cover-title">This Site</h3>
+        </div>
+      </div>
+      <div class="work__body">
+        <p class="work__desc">Claude Codeと壁打ちしながら設計・実装したポートフォリオサイト。デザインシステムの構築からレスポンシブ対応まで一気通貫で制作。</p>
+        <div class="work__insight">
+          <span class="wi-k">課題</span><span class="wi-v">自分の仕事を見せられる場所がなかった</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">判断</span><span class="wi-v">Claude Codeとの対話で設計・CSS・JSを同時進行</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">結果</span><span class="wi-v">このサイト自体が成果物 · 随時更新中</span>
+        </div>
+        <div class="work__tags">
+          <span>HTML</span><span>CSS</span><span>JavaScript</span><span>Claude Code</span>
+        </div>
+        <div class="work__footer">
+          <span class="work__year">2026</span>
+          <div class="work__links">
+            <a href="profile.html">Profile ↗</a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- NOTES -->
+<section class="sect--blog" id="notes">
+  <div class="sect--blog__header">
+    <canvas class="notes-canvas" id="notes-canvas" aria-hidden="true"></canvas>
+    <span class="sect--blog__label">Notes</span>
+  </div>
+  <div class="blog">
+    <a class="blog__item" href="blog/mac-cleaner.html">
+      <span class="blog__num">N—00</span>
+      <span class="blog__date">2026.05.31</span>
+      <span class="blog__title">macのストレージを自動で整理するクリーンアップスクリプトを作った話</span>
+      <span class="blog__arrow">→</span>
+    </a>
+    <a class="blog__item" href="blog/keiba-ai.html">
+      <span class="blog__num">N—01</span>
+      <span class="blog__date">2026.05.27</span>
+      <span class="blog__title">PythonとLightGBMで競馬予測AIを作った話</span>
+      <span class="blog__arrow">→</span>
+    </a>
+    <a class="blog__item" href="blog/rtx810-security.html">
+      <span class="blog__num">N—02</span>
+      <span class="blog__date">2026.05.31</span>
+      <span class="blog__title">YAMAHA RTX810 のセキュリティ強化と VPN 構築をした話</span>
+      <span class="blog__arrow">→</span>
+    </a>
+    <a class="blog__item" href="blog/portfolio.html">
+      <span class="blog__num">N—03</span>
+      <span class="blog__date">2026.05.27</span>
+      <span class="blog__title">Claude Code と壁打ちしながらポートフォリオサイトを作った話</span>
+      <span class="blog__arrow">→</span>
+    </a>
+    <a class="blog__item" href="blog/campfire.html">
+      <span class="blog__num">N—04</span>
+      <span class="blog__date">2026.05.25</span>
+      <span class="blog__title">焚き火 ASMR 動画を YouTube に自動投稿するシステムを作った話</span>
+      <span class="blog__arrow">→</span>
+    </a>
+    <a class="blog__item" href="blog/saa-quiz.html">
+      <span class="blog__num">N—05</span>
+      <span class="blog__date">2026.05.24</span>
+      <span class="blog__title">Next.js + Supabase で AWS SAA クイズアプリを作った話</span>
+      <span class="blog__arrow">→</span>
+    </a>
+    <a class="blog__item" href="blog/mansion-radar.html">
+      <span class="blog__num">N—06</span>
+      <span class="blog__date">2026.05.24</span>
+      <span class="blog__title">SUUMO と Notion を連携させ、マンション購入リサーチを自動化した話</span>
+      <span class="blog__arrow">→</span>
+    </a>
+    <a class="blog__item" href="blog/btc-bot.html">
+      <span class="blog__num">N—07</span>
+      <span class="blog__date">2026.05.24</span>
+      <span class="blog__title">Python で BTC 自動売買ボットを作った話</span>
+      <span class="blog__arrow">→</span>
+    </a>
+    <a class="blog__item" href="blog/note-generator.html">
+      <span class="blog__num">N—08</span>
+      <span class="blog__date">2026.05.27</span>
+      <span class="blog__title">Gemini API で Note 投資記事を自動生成するシステムを作った話</span>
+      <span class="blog__arrow">→</span>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER / CONTACT -->
+<footer class="foot" id="contact">
+  <div class="foot__top">
+    <div class="foot__eyebrow">Get in touch</div>
+    <p class="foot__cta">
+      <span class="foot__dot"></span>Open for work.
+    </p>
+    <div class="foot__channels">
+      <a class="foot__channel" data-user="info.tat77" data-domain="gmail.com"
+         href="#" onclick="this.href='mailto:'+this.dataset.user+'@'+this.dataset.domain; return true;">
+        <div class="foot__ch-left">
+          <span class="foot__ch-type">Mail</span>
+          <span class="foot__ch-label" id="mail-label">—</span>
+          <span class="foot__ch-badge">一番速い</span>
+        </div>
+        <span class="foot__ch-arrow">↗</span>
+      </a>
+      <a class="foot__channel" href="https://github.com/infotat77" target="_blank" rel="noopener noreferrer">
+        <div class="foot__ch-left">
+          <span class="foot__ch-type">GitHub</span>
+          <span class="foot__ch-label">@infotat77</span>
+        </div>
+        <span class="foot__ch-arrow">↗</span>
+      </a>
+    </div>
+  </div>
+  <div class="foot__bottom">
+    <span>© 2026 TaT · Tokyo, JP</span>
+    <nav class="foot__mobile-nav" aria-label="フッターナビゲーション">
+      <a href="#works">Works</a>
+      <a href="#notes">Notes</a>
+      <a href="#contact">Hire</a>
+      <a href="profile.html">Profile</a>
+    </nav>
+    <span class="foot__sig">made at night.</span>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    const el = document.getElementById('mail-label');
+    const a  = el && el.closest('[data-user]');
+    if (el && a) el.textContent = a.dataset.user + '@' + a.dataset.domain;
+  })();
+</script>
+<script src="script.js" defer></script>
+</body>
+</html>

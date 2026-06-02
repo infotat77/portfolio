@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SUUMOとNotionを連携させてマンション購入リサーチを自動化した話 | Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+<style>
+  /* ── Blog nav override ── */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--nav-height);
+    background: rgba(28, 24, 16, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-border);
+    z-index: 80;
+    display: flex; align-items: center;
+  }
+  .nav__inner {
+    width: 100%; max-width: 1200px; margin: 0 auto;
+    padding: 0 28px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav__logo {
+    font-family: var(--display);
+    font-size: 20px; color: var(--ink);
+    letter-spacing: 0.02em; text-transform: uppercase;
+    text-decoration: none;
+  }
+  .nav__links { display: flex; gap: 24px; list-style: none; }
+  .nav__links a {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--ink-dim); letter-spacing: 0.1em;
+    text-transform: uppercase; text-decoration: none;
+    transition: color .2s;
+  }
+  .nav__links a:hover { color: var(--glow); }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid var(--glow-soft);
+    color: var(--glow);
+  }
+  .tag--sm { font-size: 9px; padding: 2px 8px; }
+  .btn { display: inline-block; padding: 12px 24px; text-decoration: none; }
+  .btn--outline {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    border: 1px solid var(--line-2); color: var(--ink-mid);
+    transition: border-color .25s, color .25s;
+  }
+  .btn--outline:hover { border-color: var(--glow); color: var(--glow); }
+  .pipeline {
+    display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap;
+    background: var(--color-surface);
+    border-radius: 10px;
+    padding: 16px 20px; margin: 20px 0;
+    font-size: 0.85rem; color: var(--color-text-mid);
+  }
+  .pipeline__step {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: 500; color: var(--color-text);
+    white-space: nowrap;
+  }
+  .pipeline__arrow { color: var(--color-text-muted); }
+</style>
+  <style>
+    .article-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: calc(var(--nav-height) + 48px) 24px 80px;
+    }
+    .article-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: var(--color-text-muted);
+      text-decoration: none;
+      margin-bottom: 40px;
+      transition: color var(--transition);
+    }
+    .article-back:hover { color: var(--color-text); }
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .article-date { font-size: 0.82rem; color: var(--color-text-muted); }
+    .article-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 20px;
+      background: var(--color-surface2);
+      color: var(--color-text-mid);
+    }
+    .article-title {
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 12px;
+    }
+    .article-lead {
+      font-size: 1.05rem;
+      color: var(--color-text-mid);
+      line-height: 1.75;
+      margin-bottom: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .article-hero {
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 40px;
+      background: linear-gradient(160deg, #0a0f1e 0%, #0d1a2e 60%, #101f35 100%);
+      height: 280px;
+      position: relative;
+    }
+    .article-body h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 40px 0 12px;
+      padding-left: 14px;
+      border-left: 3px solid var(--color-text);
+    }
+    .article-body h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 28px 0 8px;
+    }
+    .article-body p {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--color-text-mid);
+      margin-bottom: 16px;
+    }
+    .article-body ul, .article-body ol {
+      padding-left: 1.4em;
+      margin-bottom: 16px;
+    }
+    .article-body li {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--color-text-mid);
+      margin-bottom: 4px;
+    }
+    .article-body code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85em;
+      background: var(--color-surface2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--color-text);
+    }
+    .article-body pre {
+      background: #0f1117;
+      border-radius: 10px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+    .article-body pre code {
+      background: none;
+      padding: 0;
+      font-size: 0.85rem;
+      color: #a8d8a8;
+      line-height: 1.7;
+    }
+    .article-body table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin: 20px 0;
+    }
+    .article-body th {
+      background: var(--color-surface);
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      border: 1px solid var(--color-border);
+    }
+    .article-body td {
+      padding: 10px 14px;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-mid);
+      line-height: 1.6;
+    }
+    .article-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--color-border);
+    }
+    .article-footer {
+      margin-top: 48px;
+      text-align: center;
+    }
+    .pipeline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      background: var(--color-surface);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 20px 0;
+      font-size: 0.85rem;
+    }
+    .pipeline__step {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .pipeline__arrow { color: var(--color-text-muted); }
+  </style>
+</head>
+<body>
+<canvas class="blog-canvas-left"  id="blog-canvas-left"  aria-hidden="true"></canvas>
+<canvas class="blog-canvas-right" id="blog-canvas-right" aria-hidden="true"></canvas>
+<!-- CURSOR -->
+<div class="cur" id="cursor" aria-hidden="true"></div>
+
+
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../index.html" class="nav__logo">Portfolio</a>
+      <ul class="nav__links">
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#works">Works</a></li>
+        <li><a href="../index.html#blog">Blog</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="article-wrap">
+
+    <a href="../index.html#blog" class="article-back">← ブログ一覧に戻る</a>
+
+    <div class="article-meta">
+      <span class="article-date">2026.06.01</span>
+      <span class="article-tag">Python</span>
+      <span class="article-tag">Notion API</span>
+      <span class="article-tag">Google Sheets</span>
+      <span class="article-tag">個人開発</span>
+    </div>
+
+    <h1 class="article-title">マンション購入リサーチをフル自動化した——SUUMO × Notion × Google Sheets × Streamlit</h1>
+    <p class="article-lead">
+      「SUUMOを1件ずつスクロールするのが辛い」という課題から始まり、
+      HTMLパース→JSON→Notion・Google Sheets自動同期→Streamlitダッシュボードという
+      3媒体同時出力のシステムに育てました。中古・新築の分類、間取り・予算フィルター、
+      「気になる」ボタンによる夫婦共有まで実装しています。
+    </p>
+
+    <div class="article-hero">
+      <svg viewBox="0 0 720 280" preserveAspectRatio="xMidYMid slice"
+           style="position:absolute;inset:0;width:100%;height:100%"
+           xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="scatterGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#6366f1" stop-opacity="0.2"/>
+            <stop offset="100%" stop-color="#6366f1" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- グリッド -->
+        <line x1="60" y1="20"  x2="60"  y2="200" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <line x1="60" y1="200" x2="700" y2="200" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <line x1="60" y1="80"  x2="700" y2="80"  stroke="rgba(255,255,255,0.04)" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="60" y1="140" x2="700" y2="140" stroke="rgba(255,255,255,0.04)" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="240" y1="20" x2="240" y2="200" stroke="rgba(255,255,255,0.04)" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="420" y1="20" x2="420" y2="200" stroke="rgba(255,255,255,0.04)" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="600" y1="20" x2="600" y2="200" stroke="rgba(255,255,255,0.04)" stroke-width="1" stroke-dasharray="4,4"/>
+        <!-- 軸ラベル -->
+        <text x="370" y="220" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace" text-anchor="middle">面積（㎡）</text>
+        <text x="30" y="115" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace" text-anchor="middle" transform="rotate(-90,30,115)">坪単価（万円）</text>
+        <!-- 散布図ドット（色 = エリア） -->
+        <!-- 目黒区（紫） -->
+        <circle cx="180" cy="72" r="7" fill="#a78bfa" opacity="0.85"/>
+        <circle cx="260" cy="85" r="8" fill="#a78bfa" opacity="0.8"/>
+        <circle cx="320" cy="95" r="6" fill="#a78bfa" opacity="0.75"/>
+        <!-- 世田谷区（青） -->
+        <circle cx="380" cy="110" r="9" fill="#60a5fa" opacity="0.85"/>
+        <circle cx="460" cy="118" r="7" fill="#60a5fa" opacity="0.8"/>
+        <circle cx="530" cy="125" r="8" fill="#60a5fa" opacity="0.75"/>
+        <circle cx="440" cy="100" r="6" fill="#60a5fa" opacity="0.7"/>
+        <!-- 品川区（緑） -->
+        <circle cx="280" cy="130" r="8" fill="#4ade80" opacity="0.8"/>
+        <circle cx="350" cy="142" r="7" fill="#4ade80" opacity="0.75"/>
+        <circle cx="500" cy="150" r="9" fill="#4ade80" opacity="0.8"/>
+        <!-- ハイライト（選択中） -->
+        <circle cx="380" cy="110" r="12" fill="none" stroke="#fbbf24" stroke-width="2" opacity="0.9"/>
+        <!-- ツールチップ -->
+        <rect x="390" y="78" width="140" height="52" rx="6" fill="rgba(0,0,0,0.75)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+        <text x="398" y="93" fill="rgba(255,255,255,0.9)" font-size="8.5" font-family="sans-serif" font-weight="bold">目黒区 中目黒</text>
+        <text x="398" y="107" fill="rgba(255,255,255,0.55)" font-size="8" font-family="monospace">坪単価: 420万円</text>
+        <text x="398" y="119" fill="rgba(255,255,255,0.55)" font-size="8" font-family="monospace">68㎡ / 7,800万円</text>
+        <!-- 凡例 -->
+        <circle cx="78" cy="230" r="5" fill="#a78bfa"/>
+        <text x="88" y="234" fill="rgba(255,255,255,0.5)" font-size="8.5" font-family="sans-serif">目黒区</text>
+        <circle cx="138" cy="230" r="5" fill="#60a5fa"/>
+        <text x="148" y="234" fill="rgba(255,255,255,0.5)" font-size="8.5" font-family="sans-serif">世田谷区</text>
+        <circle cx="204" cy="230" r="5" fill="#4ade80"/>
+        <text x="214" y="234" fill="rgba(255,255,255,0.5)" font-size="8.5" font-family="sans-serif">品川区</text>
+        <!-- Notionバッジ -->
+        <rect x="580" y="218" width="120" height="22" rx="4" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <text x="640" y="233" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace" text-anchor="middle">Notion DB 連携</text>
+      </svg>
+    </div>
+
+    <div class="article-body">
+
+      <h2>なぜ作ったのか</h2>
+      <p>
+        妻と都内マンションの購入を検討しており、候補エリアの相場を把握したいと思っていました。
+        ただ、SUUMOを1件ずつスクロールして比べるのは非常に非効率で、「坪単価」のような比較軸も手計算になります。
+        「一覧で俯瞰したい」「夫婦で同じ画面を見ながら話し合いたい」という課題を解決するために作りました。
+      </p>
+
+      <h2>システム構成</h2>
+      <p>週1回だけSUUMOのHTMLを手動保存する以外は、データ加工・Notion登録・ダッシュボード表示がすべて自動で行われます。</p>
+
+      <div class="pipeline">
+        <span class="pipeline__step">SUUMO HTML保存</span>
+        <span class="pipeline__arrow">→</span>
+        <span class="pipeline__step">BeautifulSoupパース</span>
+        <span class="pipeline__arrow">→</span>
+        <span class="pipeline__step">ローカルJSON</span>
+        <span class="pipeline__arrow">→</span>
+        <span class="pipeline__step">Notion DB</span>
+        <span class="pipeline__arrow">＋</span>
+        <span class="pipeline__step">Google Sheets</span>
+        <span class="pipeline__arrow">→</span>
+        <span class="pipeline__step">Streamlit</span>
+      </div>
+
+      <table>
+        <tr><th>役割</th><th>技術</th></tr>
+        <tr><td>HTMLパース</td><td>BeautifulSoup4（中古・新築の両フォーマット対応。価格範囲は最小値を取得）</td></tr>
+        <tr><td>Notion同期</td><td>notion-client（完全同期：消えた物件を自動アーカイブ）</td></tr>
+        <tr><td>Sheets同期</td><td>gspread（条件付き書式・ステータス色分け・ヘッダー固定）</td></tr>
+        <tr><td>ダッシュボード</td><td>Streamlit + Plotly + Folium（散布図・地図・Notion管理タブ）</td></tr>
+        <tr><td>ジオコーディング</td><td>geopy Nominatim + ローカルキャッシュ（住所→座標変換）</td></tr>
+      </table>
+
+      <h2>実装で工夫した点</h2>
+
+      <h3>坪単価の自動計算</h3>
+      <p>
+        マンション比較で最も重要な「坪単価」は、Notion側のFormulaプロパティで自動計算するようにしました。
+        Pythonからは価格と面積だけを送れば、Notionが <code>price / area * 3.3</code> を自動で計算します。
+      </p>
+
+      <h3>重複チェックによる差分登録</h3>
+      <p>
+        同じHTMLを再実行しても物件が重複登録されないよう、Notion APIでURL一致検索をして
+        既存データはスキップする仕組みを実装しました。週次で実行しても安心です。
+      </p>
+      <pre><code>def _already_exists(notion, database_id, url):
+    res = notion.databases.query(
+        database_id=database_id,
+        filter={"property": "URL", "url": {"equals": url}},
+    )
+    return len(res.get("results", [])) > 0</code></pre>
+
+      <h3>Notionのビュー設計</h3>
+      <p>
+        Notion DB にはテーブルビューとステータス別ボードビューの2つを用意しました。
+        テーブルビューで坪単価順にソート、ボードビューで「気になる」「見学予定」「候補外」の
+        ステータス管理ができ、夫婦間の情報共有ツールとして機能しています。
+      </p>
+
+      <h3>Streamlitダッシュボード</h3>
+      <p>
+        横軸を面積・縦軸を坪単価にした散布図で、色をエリア（区）別に分けることで
+        「同じ面積でも目黒区と世田谷区でどれだけ坪単価が違うか」が一目でわかります。
+        ホバーで物件名・価格・最寄り駅も表示されます。
+      </p>
+
+      <h2>アップデートで追加した機能（2026.06）</h2>
+      <ul>
+        <li><strong>Google Sheets同期</strong> — gspreadでシートを完全同期。ステータス列の条件付き書式・ヘッダー固定も自動適用</li>
+        <li><strong>中古/新築の分類</strong> — パーサーが自動判定し、Notion・Sheets・Streamlitすべてに反映</li>
+        <li><strong>フィルター強化</strong> — 予算上限・最低間取り・エリア（区）・物件種別。設定値はファイルに永続化</li>
+        <li><strong>「気になる」ボタン</strong> — 散布図で物件をクリック→ボタン1つでNotionステータスを変更。夫婦の検討リストとして機能</li>
+        <li><strong>Streamlit UI刷新</strong> — ヒーローバナー・物件詳細カード・Google Fonts統一。ライトテーマ固定</li>
+      </ul>
+
+      <h2>やってみてわかったこと</h2>
+      <ul>
+        <li>SUUMOは価格・間取りを範囲表示（6000万〜1億円）するため、最小値だけ取るよう正規表現を調整する必要があった</li>
+        <li>Notion APIは直感的だが、「完全同期」（消えた物件のアーカイブ）を実装するとfetch→diff→updateの3ステップになる</li>
+        <li>Google Sheets APIは条件付き書式がbatchUpdateのJSONで書く必要があり、ドキュメント読み込みに時間がかかった</li>
+        <li>Streamlitのダークモード対応は`config.toml`でライトテーマ固定が最も確実</li>
+        <li>フィルターのデフォルト値をJSONに保存してセッション状態と橋渡しする実装が意外と考慮点が多かった</li>
+      </ul>
+
+      <h2>今後やりたいこと</h2>
+      <ul>
+        <li>価格推移グラフ（同一物件の値下がり検知・履歴スナップショット）</li>
+        <li>複数物件の横並び比較テーブル</li>
+        <li>新着・価格変動の通知（LINE Notify or macOS通知センター）</li>
+      </ul>
+
+    </div>
+
+    <div class="article-tags">
+      <span class="tag tag--sm">Python</span>
+      <span class="tag tag--sm">BeautifulSoup</span>
+      <span class="tag tag--sm">Notion API</span>
+      <span class="tag tag--sm">Google Sheets API</span>
+      <span class="tag tag--sm">Streamlit</span>
+      <span class="tag tag--sm">Plotly</span>
+      <span class="tag tag--sm">Folium</span>
+      <span class="tag tag--sm">個人開発</span>
+    </div>
+
+    <div class="article-footer">
+      <a href="../index.html#blog" class="btn btn--outline">← ブログ一覧に戻る</a>
+    </div>
+
+  </div>
+
+
+<script>
+(function cursor(){
+  const cur = document.getElementById('cursor');
+  if (!cur) return;
+  let cx = innerWidth / 2, cy = innerHeight / 2;
+  let mx = cx, my = cy;
+  addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  addEventListener('mousedown', () => cur.classList.add('is-press'));
+  addEventListener('mouseup',   () => cur.classList.remove('is-press'));
+  (function loop(){
+    cx += (mx - cx) * 0.28;
+    cy += (my - cy) * 0.28;
+    cur.style.transform = `translate(${cx}px, ${cy}px) translate(-50%,-50%)`;
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => cur.classList.add('is-hover'));
+    el.addEventListener('mouseleave', () => cur.classList.remove('is-hover'));
+  });
+})();
+</script>
+<script src="../blog-side-canvas.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PythonでBTC自動売買ボットを作った話 | Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+<style>
+  /* ── Blog nav override ── */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--nav-height);
+    background: rgba(28, 24, 16, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-border);
+    z-index: 80;
+    display: flex; align-items: center;
+  }
+  .nav__inner {
+    width: 100%; max-width: 1200px; margin: 0 auto;
+    padding: 0 28px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav__logo {
+    font-family: var(--display);
+    font-size: 20px; color: var(--ink);
+    letter-spacing: 0.02em; text-transform: uppercase;
+    text-decoration: none;
+  }
+  .nav__links { display: flex; gap: 24px; list-style: none; }
+  .nav__links a {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--ink-dim); letter-spacing: 0.1em;
+    text-transform: uppercase; text-decoration: none;
+    transition: color .2s;
+  }
+  .nav__links a:hover { color: var(--glow); }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid var(--glow-soft);
+    color: var(--glow);
+  }
+  .tag--sm { font-size: 9px; padding: 2px 8px; }
+  .btn { display: inline-block; padding: 12px 24px; text-decoration: none; }
+  .btn--outline {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    border: 1px solid var(--line-2); color: var(--ink-mid);
+    transition: border-color .25s, color .25s;
+  }
+  .btn--outline:hover { border-color: var(--glow); color: var(--glow); }
+  .pipeline {
+    display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap;
+    background: var(--color-surface);
+    border-radius: 10px;
+    padding: 16px 20px; margin: 20px 0;
+    font-size: 0.85rem; color: var(--color-text-mid);
+  }
+  .pipeline__step {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: 500; color: var(--color-text);
+    white-space: nowrap;
+  }
+  .pipeline__arrow { color: var(--color-text-muted); }
+</style>
+  <style>
+    .article-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: calc(var(--nav-height) + 48px) 24px 80px;
+    }
+    .article-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: var(--color-text-muted);
+      text-decoration: none;
+      margin-bottom: 40px;
+      transition: color var(--transition);
+    }
+    .article-back:hover { color: var(--color-text); }
+
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .article-date { font-size: 0.82rem; color: var(--color-text-muted); }
+    .article-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 20px;
+      background: var(--color-surface2);
+      color: var(--color-text-mid);
+    }
+
+    .article-title {
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 12px;
+      color: var(--color-text);
+    }
+    .article-lead {
+      font-size: 1.05rem;
+      color: var(--color-text-mid);
+      line-height: 1.75;
+      margin-bottom: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    /* チャート画像エリア */
+    .article-hero {
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 40px;
+      background: linear-gradient(160deg, #060d1f 0%, #0a1628 60%, #0d2040 100%);
+      height: 280px;
+      position: relative;
+    }
+
+    /* 本文 */
+    .article-body h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 40px 0 12px;
+      padding-left: 14px;
+      border-left: 3px solid var(--color-text);
+    }
+    .article-body h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 28px 0 8px;
+      color: var(--color-text);
+    }
+    .article-body p {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--color-text-mid);
+      margin-bottom: 16px;
+    }
+    .article-body ul, .article-body ol {
+      padding-left: 1.4em;
+      margin-bottom: 16px;
+    }
+    .article-body li {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--color-text-mid);
+      margin-bottom: 4px;
+    }
+    .article-body code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85em;
+      background: var(--color-surface2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--color-text);
+    }
+    .article-body pre {
+      background: #0f1117;
+      border-radius: 10px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+    .article-body pre code {
+      background: none;
+      padding: 0;
+      font-size: 0.85rem;
+      color: #a8d8a8;
+      line-height: 1.7;
+    }
+
+    /* テーブル */
+    .article-body table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin: 20px 0;
+    }
+    .article-body th {
+      background: var(--color-surface);
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      border: 1px solid var(--color-border);
+    }
+    .article-body td {
+      padding: 10px 14px;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-mid);
+      line-height: 1.6;
+    }
+
+    /* タグ群 */
+    .article-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--color-border);
+    }
+
+    /* 戻るボタン */
+    .article-footer {
+      margin-top: 48px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<canvas class="blog-canvas-left"  id="blog-canvas-left"  aria-hidden="true"></canvas>
+<canvas class="blog-canvas-right" id="blog-canvas-right" aria-hidden="true"></canvas>
+<!-- CURSOR -->
+<div class="cur" id="cursor" aria-hidden="true"></div>
+
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../index.html" class="nav__logo">Portfolio</a>
+      <ul class="nav__links">
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#works">Works</a></li>
+        <li><a href="../index.html#blog">Blog</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="article-wrap">
+
+    <a href="../index.html#blog" class="article-back">← ブログ一覧に戻る</a>
+
+    <div class="article-meta">
+      <span class="article-date">2026.06.03 updated</span>
+      <span class="article-tag">Python</span>
+      <span class="article-tag">自動売買</span>
+      <span class="article-tag">個人開発</span>
+    </div>
+
+    <h1 class="article-title">PythonでBTC自動売買ボットを作った話</h1>
+    <p class="article-lead">
+      GMOコインのAPIを使って、テクニカル指標に基づくビットコイン自動売買ボットをゼロから開発しました。
+      11種のシグナル実装・Web管理画面・バックテスト機能・LINE通知・LaunchAgentによる常時稼働化まで、作って気づいたことをまとめます。
+    </p>
+
+    <!-- チャートイラスト -->
+    <div class="article-hero">
+      <svg viewBox="0 0 720 280" preserveAspectRatio="xMidYMid slice"
+           style="position:absolute;inset:0;width:100%;height:100%"
+           xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#00d4aa" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#00d4aa" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- グリッド -->
+        <line x1="0" y1="70"  x2="720" y2="70"  stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+        <line x1="0" y1="140" x2="720" y2="140" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+        <line x1="0" y1="210" x2="720" y2="210" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+        <line x1="144" y1="0" x2="144" y2="280" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        <line x1="288" y1="0" x2="288" y2="280" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        <line x1="432" y1="0" x2="432" y2="280" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        <line x1="576" y1="0" x2="576" y2="280" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        <!-- エリア -->
+        <polygon
+          points="0,210 80,198 150,188 210,205 280,175 340,158 400,132 450,148 510,115 570,128 630,100 720,92 720,280 0,280"
+          fill="url(#heroGrad)"/>
+        <!-- SMA長期 -->
+        <polyline
+          points="0,215 80,208 150,200 210,210 280,195 340,183 400,168 450,172 510,155 570,160 630,142 720,136"
+          fill="none" stroke="#4da6ff" stroke-width="2" stroke-dasharray="6,4" opacity="0.7"/>
+        <!-- SMA短期 -->
+        <polyline
+          points="0,205 80,190 150,180 210,200 280,168 340,150 400,125 450,142 510,108 570,120 630,92 720,86"
+          fill="none" stroke="#f6ad55" stroke-width="2" opacity="0.85"/>
+        <!-- 価格ライン -->
+        <polyline
+          points="0,210 80,198 150,188 210,205 280,175 340,158 400,132 450,148 510,115 570,128 630,100 720,92"
+          fill="none" stroke="#00d4aa" stroke-width="2.5"/>
+        <!-- 買いシグナル -->
+        <circle cx="400" cy="132" r="8" fill="#00c853" opacity="0.9"/>
+        <line x1="400" y1="124" x2="400" y2="100" stroke="#00c853" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.7"/>
+        <rect x="374" y="86" width="52" height="18" rx="4" fill="rgba(0,200,83,0.2)"/>
+        <text x="400" y="99" fill="#00c853" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">BUY ▲</text>
+        <!-- 売りシグナル -->
+        <circle cx="210" cy="205" r="7" fill="#f44336" opacity="0.85"/>
+        <line x1="210" y1="198" x2="210" y2="174" stroke="#f44336" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.7"/>
+        <rect x="184" y="160" width="52" height="18" rx="4" fill="rgba(244,67,54,0.2)"/>
+        <text x="210" y="173" fill="#f44336" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">SELL ▼</text>
+        <!-- 現在価格 -->
+        <circle cx="720" cy="92" r="5" fill="#00d4aa"/>
+        <rect x="594" y="78" width="122" height="18" rx="4" fill="rgba(0,212,170,0.15)"/>
+        <text x="655" y="91" fill="#00d4aa" font-size="10" font-family="monospace" text-anchor="middle">¥12,230,000</text>
+        <!-- 凡例 -->
+        <rect x="12" y="12" width="18" height="2.5" fill="#f6ad55" rx="1"/>
+        <text x="36" y="19" fill="rgba(255,255,255,0.5)" font-size="10" font-family="monospace">SMA5</text>
+        <rect x="88" y="12" width="18" height="2.5" fill="#4da6ff" rx="1"/>
+        <text x="112" y="19" fill="rgba(255,255,255,0.5)" font-size="10" font-family="monospace">SMA25</text>
+        <!-- ステータスバー -->
+        <rect x="0" y="254" width="720" height="26" fill="rgba(0,0,0,0.4)"/>
+        <rect x="12" y="261" width="64" height="13" rx="3" fill="rgba(0,212,170,0.2)"/>
+        <text x="44" y="271" fill="#00d4aa" font-size="9" font-family="monospace" text-anchor="middle">RSI: 52.4</text>
+        <rect x="84" y="261" width="80" height="13" rx="3" fill="rgba(255,255,255,0.07)"/>
+        <text x="124" y="271" fill="rgba(255,255,255,0.5)" font-size="9" font-family="monospace" text-anchor="middle">SIM MODE ✓</text>
+        <text x="708" y="271" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace" text-anchor="end">5min BTC/JPY</text>
+      </svg>
+    </div>
+
+    <!-- 本文 -->
+    <div class="article-body">
+
+      <h2>なぜ作ったのか</h2>
+      <p>
+        仮想通貨の自動売買に以前から興味があり、「自分でゼロから作ったらどこまでできるか」を試したくて開発を始めました。
+        市販のツールではなく、APIの叩き方・テクニカル指標の計算・注文処理まで自分で理解しながら実装することが目標でした。
+      </p>
+
+      <h2>システム構成</h2>
+      <p>外部ライブラリは最小限に絞り、GMOコインの公式APIを <code>requests</code> のみで直接叩く構成にしました。</p>
+
+      <table>
+        <tr><th>役割</th><th>技術</th></tr>
+        <tr><td>価格データ取得</td><td>GMOコイン公式 Klines API（1時間足）</td></tr>
+        <tr><td>シグナル計算</td><td>Python（pandas不使用・純粋な計算）</td></tr>
+        <tr><td>注文処理</td><td>GMOコイン Private API（HMAC-SHA256認証）</td></tr>
+        <tr><td>Web管理画面</td><td>Flask + Vanilla JS</td></tr>
+        <tr><td>即時通知</td><td>LINE Messaging API（broadcast）</td></tr>
+        <tr><td>日次レポート</td><td>Gmail SMTP（smtplib）</td></tr>
+        <tr><td>設定管理</td><td>config.json（Bot・Web間で共有）</td></tr>
+        <tr><td>常時稼働</td><td>macOS LaunchAgent + Amphetamine</td></tr>
+        <tr><td>バックテスト</td><td>backtest.py（グリッドサーチ・手数料込み損益計算）</td></tr>
+      </table>
+
+      <h2>実装した11種のシグナル</h2>
+      <p>「シグナルを1行変えるだけで切り替えられる設計」を意識して、全ストラテジーを同じインターフェースで実装しました。</p>
+
+      <h3>トレンド系</h3>
+      <ul>
+        <li><strong>SMAクロスオーバー</strong>：短期・長期の単純移動平均線のクロスで売買</li>
+        <li><strong>EMAクロスオーバー</strong>：直近価格を重視した指数移動平均のクロス</li>
+        <li><strong>MACD</strong>：2本のEMAの乖離からトレンドの勢いを計測</li>
+        <li><strong>一目均衡表</strong>：三役好転・三役逆転による強力なトレンド判定</li>
+        <li><strong>パーボリックSAR</strong>：加速係数付きのSARをゼロから実装</li>
+      </ul>
+
+      <h3>オシレーター系</h3>
+      <ul>
+        <li><strong>RSI</strong>：30/70のブレイクで買われすぎ・売られすぎを検出</li>
+        <li><strong>ストキャスティクス</strong>：%K・%Dのクロスを過熱ゾーンで検出</li>
+        <li><strong>ボリンジャーバンド反発</strong>：±2σへのタッチから反発を狙う逆張り</li>
+      </ul>
+
+      <h3>ボラティリティ・特殊系</h3>
+      <ul>
+        <li><strong>BBスクイーズ</strong>：バンド収縮後のブレイクアウトを捉える</li>
+        <li><strong>ドンチャンチャネル</strong>：過去N本の高値・安値更新で順張り</li>
+        <li><strong>マルチタイムフレーム（MTF）</strong>：1時間足の大局トレンドでフィルタリング</li>
+      </ul>
+
+      <h2>工夫した点</h2>
+
+      <h3>AND / OR条件による複数シグナル合成</h3>
+      <p>
+        複数のストラテジーを組み合わせるAND・OR条件を実装しました。
+        ANDはすべてのシグナルが一致した時だけ発注するため精度が上がり、ORはどれか1つが反応した時に発注するため機会を増やせます。
+        Web UIからワンクリックで切り替えられます。
+      </p>
+      <pre><code># AND条件：全シグナルが一致した時だけ発注
+strategy = {"mode": "and", "strategies": ["rsi", "stochastic"]}
+
+# OR条件：どれか1つが反応したら発注
+strategy = {"mode": "or",  "strategies": ["rsi", "bb_reversal"]}</code></pre>
+
+      <h3>バックテストで時間足の重要性を発見</h3>
+      <p>
+        過去30日分のデータで全11ストラテジー×3時間足（5分・15分・1時間）をグリッドサーチしました。
+        手数料（0.05%/往復）を含めた実質損益を計算した結果、<strong>5分足・15分足は全戦略がマイナス</strong>という驚きの結果に。
+        1時間足のみ全戦略でプラスとなり、時間足の選択が最も重要なパラメーターだとわかりました。
+      </p>
+      <table>
+        <tr><th>時間足</th><th>結果</th><th>理由</th></tr>
+        <tr><td>5分足</td><td>全戦略マイナス</td><td>取引回数が多く手数料負け</td></tr>
+        <tr><td>15分足</td><td>ほぼマイナス</td><td>同上</td></tr>
+        <tr><td>1時間足</td><td><strong>全戦略プラス</strong></td><td>1取引あたりの利幅が手数料を上回る</td></tr>
+      </table>
+
+      <h3>パフォーマンス指標の可視化</h3>
+      <p>
+        Web管理画面に勝率・最大ドローダウン・シャープレシオをリアルタイム表示しました。
+        トレード履歴は <code>trades.json</code> に永続化されるため、再起動後も指標が引き継がれます。
+      </p>
+
+      <h3>LINE通知（Messaging API）</h3>
+      <p>
+        買いエントリー・売り決済・ストップロス・緊急停止のタイミングでLINEに即時通知します。
+        LINE Notifyが2025年3月にサービス終了したため、LINE Messaging APIのbroadcastエンドポイントを使う実装に切り替えました。
+      </p>
+
+      <h3>緊急停止（Emergency Stop）</h3>
+      <p>
+        直近N本のローソク足でX%以上の急激な価格変動を検知した場合、新規エントリーを自動スキップします。
+        閾値はWeb UIから変更可能です。
+      </p>
+
+      <h3>Web管理画面</h3>
+      <p>
+        ストラテジーの切り替えや各種パラメーターの変更をブラウザから操作できるWeb UIをFlaskで構築しました。
+        設定は <code>config.json</code> に保存され、ボットは5分ごとに再読み込みするためリアルタイムに反映されます。
+      </p>
+
+      <h3>macOSで常時稼働</h3>
+      <p>
+        LaunchAgentに登録することで、PCの再起動後も自動起動・クラッシュ時の自動復帰を実現しました。
+        MacBookの蓋を閉じてもスリープしないようAmphetamineと <code>pmset</code> を組み合わせて設定しています。
+      </p>
+
+      <h2>やってみてわかったこと</h2>
+      <ul>
+        <li>テクニカル指標はシンプルな数式の組み合わせで、自分で実装すると仕組みが深く理解できる</li>
+        <li><strong>手数料を考慮しないバックテストは意味がない</strong>。5分足では手数料だけで月数百円の赤字になる</li>
+        <li>時間足の選択がパラメーター調整より遥かに重要だった</li>
+        <li>一目均衡表は78本分のローソク足が必要で、データ取得の設計が意外と重要だった</li>
+        <li>APIキーの管理（<code>.env</code> ファイル分離・環境変数化）はセキュリティの基本として徹底した</li>
+      </ul>
+
+      <h2>今後やりたいこと</h2>
+      <ul>
+        <li>複数通貨ペアへの対応（ETH・XRP など）</li>
+        <li>dry_run終了後の実運用移行と結果検証</li>
+        <li>バックテスト結果のWeb UI可視化</li>
+      </ul>
+
+    </div>
+
+    <!-- タグ -->
+    <div class="article-tags">
+      <span class="tag tag--sm">Python</span>
+      <span class="tag tag--sm">Flask</span>
+      <span class="tag tag--sm">GMO Coin API</span>
+      <span class="tag tag--sm">テクニカル分析</span>
+      <span class="tag tag--sm">自動売買</span>
+      <span class="tag tag--sm">バックテスト</span>
+      <span class="tag tag--sm">LINE API</span>
+      <span class="tag tag--sm">LaunchAgent</span>
+      <span class="tag tag--sm">個人開発</span>
+    </div>
+
+    <div class="article-footer">
+      <a href="../index.html#blog" class="btn btn--outline">← ブログ一覧に戻る</a>
+    </div>
+
+  </div>
+
+
+<script>
+(function cursor(){
+  const cur = document.getElementById('cursor');
+  if (!cur) return;
+  let cx = innerWidth / 2, cy = innerHeight / 2;
+  let mx = cx, my = cy;
+  addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  addEventListener('mousedown', () => cur.classList.add('is-press'));
+  addEventListener('mouseup',   () => cur.classList.remove('is-press'));
+  (function loop(){
+    cx += (mx - cx) * 0.28;
+    cy += (my - cy) * 0.28;
+    cur.style.transform = `translate(${cx}px, ${cy}px) translate(-50%,-50%)`;
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => cur.classList.add('is-hover'));
+    el.addEventListener('mouseleave', () => cur.classList.remove('is-hover'));
+  });
+})();
+</script>
+<script src="../blog-side-canvas.js" defer></script>
+</body>
+</html>

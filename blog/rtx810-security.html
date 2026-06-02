@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YAMAHA RTX810 のセキュリティ強化と VPN 構築をした話 | Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: var(--nav-height);
+      background: rgba(28, 24, 16, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--color-border);
+      z-index: 80;
+      display: flex; align-items: center;
+    }
+    .nav__inner {
+      width: 100%; max-width: 1200px; margin: 0 auto;
+      padding: 0 28px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav__logo {
+      font-family: var(--display);
+      font-size: 20px; color: var(--ink);
+      letter-spacing: 0.02em; text-transform: uppercase;
+      text-decoration: none;
+    }
+    .nav__links { display: flex; gap: 24px; list-style: none; }
+    .nav__links a {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--ink-dim); letter-spacing: 0.1em;
+      text-transform: uppercase; text-decoration: none;
+      transition: color .2s;
+    }
+    .nav__links a:hover { color: var(--glow); }
+    .tag {
+      display: inline-block;
+      font-family: var(--mono); font-size: 10px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 3px 10px;
+      border: 1px solid var(--glow-soft);
+      color: var(--glow);
+    }
+    .tag--sm { font-size: 9px; padding: 2px 8px; }
+    .btn { display: inline-block; padding: 12px 24px; text-decoration: none; }
+    .btn--outline {
+      font-family: var(--mono); font-size: 11px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      border: 1px solid var(--line-2); color: var(--ink-mid);
+      transition: border-color .25s, color .25s;
+    }
+    .btn--outline:hover { border-color: var(--glow); color: var(--glow); }
+    .article-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: calc(var(--nav-height) + 48px) 24px 80px;
+    }
+    .article-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: var(--color-text-muted);
+      text-decoration: none;
+      margin-bottom: 40px;
+      transition: color var(--transition);
+    }
+    .article-back:hover { color: var(--color-text); }
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .article-date { font-size: 0.82rem; color: var(--color-text-muted); }
+    .article-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 20px;
+      background: var(--color-surface2);
+      color: var(--color-text-mid);
+    }
+    .article-title {
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 12px;
+      color: var(--color-text);
+    }
+    .article-lead {
+      font-size: 1.05rem;
+      color: var(--color-text-mid);
+      line-height: 1.75;
+      margin-bottom: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .article-hero {
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 40px;
+      background: linear-gradient(160deg, #0a0f1a 0%, #0d1f2d 60%, #0a1520 100%);
+      height: 280px;
+      position: relative;
+    }
+    .article-body h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 40px 0 12px;
+      padding-left: 14px;
+      border-left: 3px solid var(--color-text);
+    }
+    .article-body h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 28px 0 8px;
+      color: var(--color-text);
+    }
+    .article-body p {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--color-text-mid);
+      margin-bottom: 16px;
+    }
+    .article-body ul, .article-body ol {
+      padding-left: 1.4em;
+      margin-bottom: 16px;
+    }
+    .article-body li {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--color-text-mid);
+      margin-bottom: 4px;
+    }
+    .article-body code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85em;
+      background: var(--color-surface2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--color-text);
+    }
+    .article-body pre {
+      background: #0f1117;
+      border-radius: 10px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+    .article-body pre code {
+      background: none;
+      padding: 0;
+      font-size: 0.85rem;
+      color: #a8d8a8;
+      line-height: 1.7;
+    }
+    .article-body table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin: 20px 0;
+    }
+    .article-body th {
+      background: var(--color-surface);
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      border: 1px solid var(--color-border);
+    }
+    .article-body td {
+      padding: 10px 14px;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-mid);
+      line-height: 1.6;
+    }
+    .article-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--color-border);
+    }
+    .article-footer {
+      margin-top: 48px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<canvas class="blog-canvas-left"  id="blog-canvas-left"  aria-hidden="true"></canvas>
+<canvas class="blog-canvas-right" id="blog-canvas-right" aria-hidden="true"></canvas>
+<div class="cur" id="cursor" aria-hidden="true"></div>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <a href="../index.html" class="nav__logo">Portfolio</a>
+    <ul class="nav__links">
+      <li><a href="../index.html#about">About</a></li>
+      <li><a href="../index.html#works">Works</a></li>
+      <li><a href="../index.html#blog">Blog</a></li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="article-wrap">
+
+  <a href="../index.html#blog" class="article-back">← ブログ一覧に戻る</a>
+
+  <div class="article-meta">
+    <span class="article-date">2026.05.31</span>
+    <span class="article-tag">ネットワーク</span>
+    <span class="article-tag">セキュリティ</span>
+    <span class="article-tag">YAMAHA</span>
+  </div>
+
+  <h1 class="article-title">YAMAHA RTX810 のセキュリティ強化と VPN 構築をした話</h1>
+  <p class="article-lead">
+    自宅の YAMAHA RTX810 ルーターが脆弱な初期設定のまま運用されていたので、Telnet 無効化・SSH 有効化・ファイアウォール強化・VPN 設定まで一気にやり直した。途中で WN-DX1200GR が RTX810 を勝手に書き換えていた事件も発覚し、ルーターまわりの複雑さを身をもって体験した記録。
+  </p>
+
+  <div class="article-hero">
+    <svg viewBox="0 0 720 280" preserveAspectRatio="xMidYMid slice"
+         style="position:absolute;inset:0;width:100%;height:100%"
+         xmlns="http://www.w3.org/2000/svg">
+      <!-- 背景グリッド -->
+      <defs>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(0,180,255,0.06)" stroke-width="1"/>
+        </pattern>
+      </defs>
+      <rect width="720" height="280" fill="url(#grid)"/>
+
+      <!-- ルーター本体 -->
+      <rect x="290" y="100" width="140" height="80" rx="8"
+            fill="rgba(0,120,255,0.12)" stroke="rgba(0,180,255,0.5)" stroke-width="1.5"/>
+      <text x="360" y="132" fill="rgba(0,200,255,0.9)" font-size="11" font-family="monospace"
+            font-weight="bold" text-anchor="middle">RTX810</text>
+      <text x="360" y="150" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace"
+            text-anchor="middle">192.168.10.1</text>
+      <text x="360" y="166" fill="rgba(80,220,80,0.8)" font-size="8" font-family="monospace"
+            text-anchor="middle">Rev.11.01.34</text>
+
+      <!-- WAN側（左） -->
+      <rect x="60" y="115" width="110" height="50" rx="6"
+            fill="rgba(255,80,80,0.08)" stroke="rgba(255,80,80,0.4)" stroke-width="1"/>
+      <text x="115" y="137" fill="rgba(255,100,100,0.9)" font-size="9" font-family="monospace"
+            text-anchor="middle">SoftBank</text>
+      <text x="115" y="152" fill="rgba(255,255,255,0.35)" font-size="8" font-family="monospace"
+            text-anchor="middle">PPPoE / CGNAT</text>
+      <line x1="170" y1="140" x2="290" y2="140" stroke="rgba(255,80,80,0.5)" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+      <!-- LAN側（右） -->
+      <rect x="550" y="80" width="120" height="40" rx="6"
+            fill="rgba(80,200,80,0.08)" stroke="rgba(80,200,80,0.35)" stroke-width="1"/>
+      <text x="610" y="105" fill="rgba(80,220,80,0.8)" font-size="9" font-family="monospace"
+            text-anchor="middle">Mac / GALLERIA</text>
+      <line x1="430" y1="125" x2="550" y2="100" stroke="rgba(80,200,80,0.4)" stroke-width="1.5"/>
+
+      <rect x="550" y="135" width="120" height="40" rx="6"
+            fill="rgba(80,200,80,0.08)" stroke="rgba(80,200,80,0.35)" stroke-width="1"/>
+      <text x="610" y="155" fill="rgba(80,220,80,0.8)" font-size="9" font-family="monospace"
+            text-anchor="middle">IoT / スマート家電</text>
+      <line x1="430" y1="140" x2="550" y2="155" stroke="rgba(80,200,80,0.4)" stroke-width="1.5"/>
+
+      <rect x="550" y="190" width="120" height="40" rx="6"
+            fill="rgba(255,180,0,0.08)" stroke="rgba(255,180,0,0.35)" stroke-width="1"/>
+      <text x="610" y="207" fill="rgba(255,200,50,0.8)" font-size="9" font-family="monospace"
+            text-anchor="middle">WN-DX1200GR</text>
+      <text x="610" y="221" fill="rgba(255,100,100,0.7)" font-size="8" font-family="monospace"
+            text-anchor="middle">要注意AP</text>
+      <line x1="430" y1="155" x2="550" y2="210" stroke="rgba(255,180,0,0.4)" stroke-width="1.5"/>
+
+      <!-- SSH/セキュリティバッジ -->
+      <rect x="60" y="30" width="90" height="22" rx="4"
+            fill="rgba(80,220,80,0.15)" stroke="rgba(80,220,80,0.4)" stroke-width="1"/>
+      <text x="105" y="45" fill="rgba(80,220,80,0.9)" font-size="9" font-family="monospace"
+            text-anchor="middle">SSH enabled</text>
+
+      <rect x="160" y="30" width="90" height="22" rx="4"
+            fill="rgba(80,220,80,0.15)" stroke="rgba(80,220,80,0.4)" stroke-width="1"/>
+      <text x="205" y="45" fill="rgba(80,220,80,0.9)" font-size="9" font-family="monospace"
+            text-anchor="middle">Telnet OFF</text>
+
+      <rect x="260" y="30" width="100" height="22" rx="4"
+            fill="rgba(80,220,80,0.15)" stroke="rgba(80,220,80,0.4)" stroke-width="1"/>
+      <text x="310" y="45" fill="rgba(80,220,80,0.9)" font-size="9" font-family="monospace"
+            text-anchor="middle">Firewall ON</text>
+
+      <rect x="370" y="30" width="120" height="22" rx="4"
+            fill="rgba(0,180,255,0.15)" stroke="rgba(0,180,255,0.4)" stroke-width="1"/>
+      <text x="430" y="45" fill="rgba(0,200,255,0.9)" font-size="9" font-family="monospace"
+            text-anchor="middle">Tailscale VPN</text>
+
+      <!-- ステータスバー -->
+      <rect x="0" y="254" width="720" height="26" fill="rgba(0,0,0,0.45)"/>
+      <rect x="12" y="261" width="80" height="13" rx="3" fill="rgba(0,120,255,0.2)"/>
+      <text x="52" y="271" fill="rgba(0,180,255,0.9)" font-size="9" font-family="monospace"
+            text-anchor="middle">RTX810</text>
+      <rect x="100" y="261" width="80" height="13" rx="3" fill="rgba(255,255,255,0.06)"/>
+      <text x="140" y="271" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace"
+            text-anchor="middle">SoftBank</text>
+      <text x="708" y="271" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace"
+            text-anchor="end">CGNAT / Tailscale</text>
+    </svg>
+  </div>
+
+  <div class="article-body">
+
+    <h2>背景</h2>
+    <p>
+      自宅ネットワークに YAMAHA RTX810 を導入していたが、初期設定のまま長期間運用していた。
+      Telnet が有効・pp 1 にセキュリティフィルターなし・アウトバウンドが実質全許可という状態だったため、
+      一通り見直すことにした。
+    </p>
+
+    <h2>発見した脆弱性</h2>
+    <table>
+      <tr><th>項目</th><th>問題</th></tr>
+      <tr><td>Telnet</td><td>有効（平文通信）</td></tr>
+      <tr><td>pp 1</td><td>セキュリティフィルター未設定・常時接続</td></tr>
+      <tr><td>アウトバウンド</td><td>dynamic 201098/201099 で TCP/UDP 全許可</td></tr>
+      <tr><td>管理パスワード</td><td>1文字の極端に短いパスワード</td></tr>
+      <tr><td>WN-DX1200GR</td><td>「おまかせ設定」でRTX810設定を無断変更していた</td></tr>
+    </table>
+
+    <h2>対応した内容</h2>
+
+    <h3>Telnet 無効化 → SSH 有効化</h3>
+    <p>
+      WebGUI のコマンド実行から <code>no telnetd host lan</code> を実行。
+      続けて SSH を <code>sshd host lan1</code> で有効化し、ホスト鍵を生成した。
+      <code>sshd host lan</code> だとエラーになる点に注意（<code>lan1</code> と明示する必要がある）。
+    </p>
+    <pre><code>no telnetd host lan
+sshd host lan1</code></pre>
+
+    <h3>pp 1 の無効化</h3>
+    <p>
+      デフォルトゲートウェイは pp 2（ソフトバンク光）のみで、pp 1 は未使用だったため無効化した。
+    </p>
+    <pre><code>pp select 1
+pp disable 1</code></pre>
+
+    <h3>管理アクセスの制限</h3>
+    <p>
+      WebGUI と SSH を自分の Mac（192.168.10.100）とデスクトップ PC（192.168.10.2）のみに制限した。
+      後述の WN-DX1200GR 問題の根本対策でもある。
+    </p>
+    <pre><code>httpd host 192.168.10.100 192.168.10.2
+sshd host 192.168.10.100 192.168.10.2</code></pre>
+
+    <h2>WN-DX1200GR 事件</h2>
+    <p>
+      作業中にルーターが何度も無応答になる現象が発生した。ログを確認すると、LAN 内の
+      192.168.100.2 というデバイスが管理者として複数回 WebGUI にログインし、設定を書き換えていた。
+    </p>
+    <pre><code>Login succeeded for HTTP: 192.168.100.2
+'administrator' succeeded for HTTP: 192.168.100.2
+Configuration saved in "CONFIG0" by HTTPD</code></pre>
+    <p>
+      MAC アドレスを調べると ASIX Electronics（USB-LAN アダプターチップのメーカー）で、
+      正体はポート 3 に接続している I-O DATA WN-DX1200GR の WiFi アクセスポイントだった。
+      「おまかせ設定」という機能が上流ルーターに自動アクセスして設定を変更する仕様になっていた。
+    </p>
+    <p>
+      AP を工場出荷状態にリセットし、RTX810 側で管理アクセスを IP 制限することで「おまかせ設定」問題は解消した。
+      ただしリセット後、WN-DX1200GR がルーターモードで起動し、独自の 192.168.0.x サブネットで DHCP を配布する状態になっていた。
+      これにより二重 NAT が発生し、WiFi 接続はできるもののインターネットに出られない状態が続いていた。
+    </p>
+    <p>
+      後日、工場出荷状態の WN-DX1200GR の管理画面（<code>http://192.168.0.1</code>）にアクセスして
+      動作モードをルーターモードから <strong>AP モード（アクセスポイントモード）</strong>に変更することで完全解決した。
+      APモードでは WN-DX1200GR は単純な無線ブリッジとして動作し、
+      WiFi クライアントは RTX810 の DHCP から直接 192.168.10.x のアドレスを取得できるようになった。
+    </p>
+
+    <h2>L2TP/IPsec VPN 設定</h2>
+    <p>
+      外出先からのアクセスを目的に L2TP/IPsec VPN を設定した。
+      macOS のビルトイン VPN クライアントから接続できる構成。
+    </p>
+    <pre><code>ipsec ike version 1 1
+ipsec ike encryption 1 aes-cbc
+ipsec ike hash 1 sha
+ipsec ike pre-shared-key 1 text [PSK]
+ipsec ike remote address 1 any
+tunnel select 1
+  tunnel encapsulation l2tp
+  ipsec tunnel 101
+l2tp service on
+pp select anonymous
+  pp bind tunnel1
+  pp auth username [user] [pass]
+  ip pp remote address pool 192.168.10.200-192.168.10.210</code></pre>
+
+    <h2>CGNAT の壁</h2>
+    <p>
+      設定完了後、テザリングから VPN 接続を試みたが繋がらなかった。
+      原因を調べると、ソフトバンク光は CGNAT 環境であり、グローバル IP（221.103.230.95）が
+      複数ユーザーで共有されていた。テザリングしたスマホも同じ IP になるため、
+      「外部から自宅ルーターに接続する」ことができない構造だった。
+    </p>
+    <p>
+      IPv6 IPoE への切り替えも試みたが、インターネット疎通まであと一歩届かず（ソフトバンク光の IPv6
+      オプション未契約が原因と思われる）。
+    </p>
+
+    <h2>Tailscale で解決</h2>
+    <p>
+      CGNAT を回避できる Tailscale を導入した。
+      各デバイスにアプリをインストールするだけで、NAT 越えを自動処理してくれる。
+      無料プランで 100 デバイスまで接続でき、管理画面も使いやすい。
+    </p>
+    <table>
+      <tr><th>方式</th><th>CGNAT対応</th><th>設定難易度</th></tr>
+      <tr><td>L2TP/IPsec</td><td>不可</td><td>高</td></tr>
+      <tr><td>IPv6 VPN</td><td>可（ISP対応要）</td><td>高</td></tr>
+      <tr><td>Tailscale</td><td>可</td><td>低</td></tr>
+    </table>
+
+    <h2>やってみてわかったこと</h2>
+    <ul>
+      <li>ルーターのログは宝の山。問題の原因がほぼすべてログに記録されていた</li>
+      <li>WiFi AP の「おまかせ設定」は便利な反面、意図しないルーター設定変更を引き起こすことがある</li>
+      <li>AP を工場出荷リセットするとルーターモードで起動するため、二重 NAT になる。AP モードへの変更を忘れずに</li>
+      <li>ソフトバンク光は CGNAT。L2TP/IPsec VPN を使いたいなら IPv6 オプション契約が必要</li>
+      <li>RTX810 のコマンドは SSH 越しの非インタラクティブ実行（<code>ssh host "cmd"</code>）に非対応</li>
+      <li><code>sshd host lan</code> はエラー。<code>sshd host lan1</code> と書く必要がある</li>
+      <li>Tailscale は CGNAT 環境での VPN 代替として非常に優秀</li>
+    </ul>
+
+    <h2>最終的なセキュリティ構成</h2>
+    <table>
+      <tr><th>対応</th><th>状態</th></tr>
+      <tr><td>Telnet</td><td>無効化</td></tr>
+      <tr><td>SSH</td><td>有効（EnURA1201 / 指定 IP のみ）</td></tr>
+      <tr><td>WebGUI</td><td>指定 IP のみ許可</td></tr>
+      <tr><td>pp 1</td><td>無効化</td></tr>
+      <tr><td>セキュリティフィルター</td><td>インバウンド・アウトバウンド適用済み</td></tr>
+      <tr><td>VPN</td><td>Tailscale（CGNAT対応）</td></tr>
+      <tr><td>WN-DX1200GR</td><td>AP モード設定済み（二重 NAT 解消）</td></tr>
+      <tr><td>DDNS</td><td>enura1-home.aa0.netvolante.jp</td></tr>
+    </table>
+
+  </div>
+
+    <h2>追記（2026.05.31）: DHCP IP 変動でアクセス不能になった話</h2>
+    <p>
+      設定完了後、しばらくして RTX810 に SSH も WebGUI も繋がらなくなる事態が発生した。
+      原因は単純で、Mac に DHCP で割り当てられた IP が <code>192.168.10.100</code> から
+      <code>192.168.10.12</code> に変わっていたのが原因だった。
+      SSH・HTTP アクセスを <code>.100</code> と <code>.2</code> に制限していたため、そのまま弾かれていた。
+      ping は通るのに SSH できないのが最初のヒントになった（ICMP はフィルター対象外）。
+    </p>
+    <p>
+      復旧手順は以下の通り。Mac の IP を手動で <code>192.168.10.100</code> に設定して SSH で入り、
+      DHCP スコープバインドを設定して保存した。
+    </p>
+    <pre><code>administrator
+dhcp scope bind 1 192.168.10.100 ethernet aa:39:d2:5e:ab:f0
+save</code></pre>
+    <p>
+      これで Mac の MACアドレス（<code>aa:39:d2:5e:ab:f0</code>）には常に <code>192.168.10.100</code>
+      が割り当てられるようになった。Mac 側は DHCP のままでよく、手動 IP 設定は不要になった。
+    </p>
+    <p>
+      あわせて <code>~/.ssh/config</code> にキープアライブ設定を追加した。RTX810 は SSH セッションが
+      アイドル状態になるとすぐ切断されるためで、これがないと接続直後に落とされることがある。
+    </p>
+    <pre><code>Host rtx810
+    HostName 192.168.10.1
+    User EnURA1201
+    KexAlgorithms +diffie-hellman-group14-sha1
+    HostKeyAlgorithms +ssh-rsa
+    ServerAliveInterval 30
+    ServerAliveCountMax 10</code></pre>
+    <p>
+      IP 制限によるロックアウトを防ぐには、管理 PC に DHCP 固定割り当てをしておくのが必須だと改めて実感した。
+      アクセス制限をかけるなら IP が変わらないことを前提にする必要がある。
+    </p>
+
+  </div>
+
+  <div class="article-tags">
+    <span class="tag tag--sm">YAMAHA RTX810</span>
+    <span class="tag tag--sm">ネットワーク</span>
+    <span class="tag tag--sm">セキュリティ</span>
+    <span class="tag tag--sm">SSH</span>
+    <span class="tag tag--sm">L2TP/IPsec</span>
+    <span class="tag tag--sm">Tailscale</span>
+    <span class="tag tag--sm">CGNAT</span>
+    <span class="tag tag--sm">VPN</span>
+  </div>
+
+  <div class="article-footer">
+    <a href="../index.html#blog" class="btn btn--outline">← ブログ一覧に戻る</a>
+  </div>
+
+</div>
+
+<script>
+(function cursor(){
+  const cur = document.getElementById('cursor');
+  if (!cur) return;
+  let cx = innerWidth / 2, cy = innerHeight / 2;
+  let mx = cx, my = cy;
+  addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  addEventListener('mousedown', () => cur.classList.add('is-press'));
+  addEventListener('mouseup',   () => cur.classList.remove('is-press'));
+  (function loop(){
+    cx += (mx - cx) * 0.28;
+    cy += (my - cy) * 0.28;
+    cur.style.transform = `translate(${cx}px, ${cy}px) translate(-50%,-50%)`;
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => cur.classList.add('is-hover'));
+    el.addEventListener('mouseleave', () => cur.classList.remove('is-hover'));
+  });
+})();
+</script>
+<script src="../blog-side-canvas.js" defer></script>
+</body>
+</html>

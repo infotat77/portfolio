@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Code と壁打ちしながらポートフォリオサイトを作った話 | TaT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .article-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: calc(var(--nav-height) + 56px) 24px 96px;
+    }
+    .article-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-dim);
+      text-decoration: none;
+      margin-bottom: 48px;
+      transition: color .2s;
+    }
+    .article-back:hover { color: var(--ink-2); }
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .article-date {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--ink-dim);
+      letter-spacing: 0.1em;
+    }
+    .article-tag {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border: 1px solid var(--line-2);
+      color: var(--ink-mid);
+    }
+    .article-title {
+      font-family: var(--sans);
+      font-size: clamp(1.5rem, 4vw, 2.2rem);
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.025em;
+      margin-bottom: 16px;
+      color: var(--ink);
+    }
+    .article-lead {
+      font-family: var(--sans);
+      font-size: 1rem;
+      color: var(--ink-mid);
+      line-height: 1.8;
+      margin-bottom: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--line);
+    }
+    .article-hero {
+      border: 1px solid var(--line);
+      overflow: hidden;
+      margin-bottom: 48px;
+      background: var(--bg-2);
+      height: 240px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .article-hero-code {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink-dim);
+      line-height: 2;
+      text-align: left;
+      pointer-events: none;
+      user-select: none;
+    }
+    .article-hero-code .c-green { color: var(--green); }
+    .article-hero-code .c-bright { color: var(--ink-2); }
+    .article-body h2 {
+      font-family: var(--sans);
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin: 44px 0 14px;
+      padding-left: 12px;
+      border-left: 2px solid var(--ink-dim);
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .article-body h3 {
+      font-family: var(--sans);
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 28px 0 8px;
+      color: var(--ink-2);
+    }
+    .article-body p {
+      font-family: var(--sans);
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--ink-mid);
+      margin-bottom: 16px;
+    }
+    .article-body ul, .article-body ol {
+      padding-left: 1.4em;
+      margin-bottom: 16px;
+    }
+    .article-body li {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--ink-mid);
+      margin-bottom: 4px;
+    }
+    .article-body strong { color: var(--ink); font-weight: 600; }
+    .article-body em { font-style: italic; color: var(--ink-2); }
+    .article-body code {
+      font-family: var(--mono);
+      font-size: 0.85em;
+      background: var(--bg-3);
+      padding: 2px 6px;
+      color: var(--ink-2);
+      border: 1px solid var(--line);
+    }
+    .article-body pre {
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+    .article-body pre code {
+      background: none;
+      padding: 0;
+      font-size: 0.85rem;
+      color: var(--ink-2);
+      line-height: 1.7;
+      border: none;
+    }
+    .pipeline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      padding: 16px 20px;
+      margin: 20px 0;
+      font-size: 0.85rem;
+      color: var(--ink-mid);
+    }
+    .pipeline__step {
+      font-family: var(--mono);
+      background: var(--bg-3);
+      border: 1px solid var(--line-2);
+      padding: 5px 12px;
+      font-size: 0.82rem;
+      color: var(--ink-2);
+      white-space: nowrap;
+    }
+    .pipeline__arrow { color: var(--ink-dim); }
+    .article-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 56px;
+      padding-top: 32px;
+      border-top: 1px solid var(--line);
+    }
+    .article-footer {
+      margin-top: 48px;
+      text-align: center;
+    }
+    .article-footer a {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-dim);
+      border: 1px solid var(--line-2);
+      padding: 10px 24px;
+      display: inline-block;
+      transition: color .2s, border-color .2s;
+    }
+    .article-footer a:hover { color: var(--ink-2); border-color: var(--line-hover); }
+  </style>
+</head>
+<body>
+<canvas class="blog-canvas-left"  id="blog-canvas-left"  aria-hidden="true"></canvas>
+<canvas class="blog-canvas-right" id="blog-canvas-right" aria-hidden="true"></canvas>
+
+<!-- CURSOR -->
+<div class="cur" id="cursor" aria-hidden="true"></div>
+
+<!-- NAVIGATION -->
+<header class="chrome" role="banner">
+  <a href="../index.html" class="chrome__brand">TaT</a>
+  <nav class="chrome__nav" aria-label="メインナビゲーション">
+    <a href="../index.html#works">Works</a>
+    <a href="../index.html#notes">Notes</a>
+    <a href="../index.html#contact">Hire</a>
+    <a href="../profile.html">Profile</a>
+  </nav>
+</header>
+
+<div class="article-wrap">
+
+  <a href="../index.html#notes" class="article-back">← Notes に戻る</a>
+
+  <div class="article-meta">
+    <span class="article-date">2026.05.27</span>
+    <span class="article-tag">HTML / CSS</span>
+    <span class="article-tag">JavaScript</span>
+    <span class="article-tag">Claude Code</span>
+  </div>
+
+  <h1 class="article-title">Claude Code と壁打ちしながらポートフォリオサイトを作った話</h1>
+  <p class="article-lead">
+    デザインシステムの設計からレスポンシブ対応、ASCIIアニメーション実装まで、Claude Codeとの対話だけで完結させた。コードを書いた経験がほぼない状態から、このサイトが動くまでの記録。
+  </p>
+
+  <div class="article-hero">
+    <div class="article-hero-code">
+      <span class="c-bright">--bg:</span>         #0a0a0f;<br>
+      <span class="c-bright">--ink:</span>        #e2e8f0;<br>
+      <span class="c-bright">--green:</span>      <span class="c-green">#48bb78</span>;<br>
+      <span class="c-bright">--sans:</span>       'Inter Tight';<br>
+      <span class="c-bright">--mono:</span>       'JetBrains Mono';<br>
+    </div>
+  </div>
+
+  <div class="article-body">
+
+    <h2>なぜポートフォリオを作ったか</h2>
+    <p>
+      4つのプロダクトを作っても、見せる場所がなかった。GitHubのREADMEでは伝わらないし、口頭で説明するにも限界がある。「動いているものを見せる」ためのハブが欲しかった。
+    </p>
+    <p>
+      同時に、サイトそのものを<strong>5番目のプロダクト</strong>として位置づけることにした。作り方も含めて見せられるなら、それが一番正直だと思った。
+    </p>
+
+    <h2>どうやって作ったか</h2>
+    <p>
+      コードエディタはほぼ開かず、Claude Codeとのチャットで進めた。デザインの方向性を言葉で伝え、生成されたコードを確認し、気になる点を指摘してまた修正する。この繰り返しだけで完成した。
+    </p>
+
+    <div class="pipeline">
+      <span class="pipeline__step">方向性を言葉で伝える</span>
+      <span class="pipeline__arrow">→</span>
+      <span class="pipeline__step">CSS / HTML 生成</span>
+      <span class="pipeline__arrow">→</span>
+      <span class="pipeline__step">ブラウザで確認</span>
+      <span class="pipeline__arrow">→</span>
+      <span class="pipeline__step">フィードバック</span>
+      <span class="pipeline__arrow">→</span>
+      <span class="pipeline__step">修正</span>
+    </div>
+
+    <p>
+      一番時間がかかったのはデザイン方針の言語化だった。「エディトリアル系のwarm dark」から始まり、「ハイエンドSaaS（Linear / Vercel系）のニュートラルダーク」に着地するまで、何度も方向転換した。
+    </p>
+
+    <h2>デザインシステムの構築</h2>
+    <p>
+      最初にCSS変数（デザイントークン）を定義するところから始めた。色・フォント・ボーダーをすべて変数に集約しておくことで、後からテーマを丸ごと変えることができる。
+    </p>
+    <pre><code>:root {
+  --bg:    #0a0a0f;
+  --ink:   #e2e8f0;
+  --green: #48bb78;
+  --sans:  'Inter Tight', sans-serif;
+  --mono:  'JetBrains Mono', monospace;
+}</code></pre>
+    <p>
+      フォントは2種類に絞った。Anton・Instrument Serif・Noto Sans JPを使っていた時期もあったが、情報量が増えるほど読みにくくなった。Inter Tight（見出し・本文）とJetBrains Mono（ラベル・コード）だけで十分だとわかった。
+    </p>
+
+    <h2>ASCIIアニメーションの仕組み</h2>
+    <p>
+      ヒーローセクションとWorksカードのカバーに、Canvas APIを使ったASCII文字のアニメーションを入れた。仕組みはシンプルで、グリッド状に文字を並べ、サイン波でアルファ値を変化させるだけ。
+    </p>
+    <ul>
+      <li>ヒーロー：マウス位置に反応して近くの文字が明るくなる</li>
+      <li>Worksカード：各プロジェクトのテーマカラーで異なる文字セットが流れる</li>
+      <li>IntersectionObserverでビューポート外はRAFを止めてパフォーマンスを確保</li>
+    </ul>
+
+    <h2>苦労したこと</h2>
+    <h3>スクロールトラップ問題</h3>
+    <p>
+      横スクロールのWorksレール実装で、縦スクロールがそのままWorksに吸われてしまう問題が起きた。wheelイベントでレールの端（atStart / atEnd）を判定して、端に達したら<code>preventDefault()</code>しない、という処理で解消した。
+    </p>
+
+    <h3>デザインの方向転換</h3>
+    <p>
+      最初のデザインはamber warm（#1c1810ベース）の装飾的なスタイルだった。見た目は面白いが、プロフェッショナルな印象を与えたい場合には合わないと判断し、ニュートラルダークに全面変更した。CSS変数を使っていたおかげで、ルートの変数を書き換えるだけで大半の色が変わった。
+    </p>
+
+    <h2>学んだこと</h2>
+    <ul>
+      <li><strong>言語化が全て：</strong>Claude Codeへの指示が曖昧だと、生成されるコードも曖昧になる。デザインの意図を言葉にする力が一番重要だった</li>
+      <li><strong>変数設計を最初に：</strong>CSS変数を最初にちゃんと設計しておけば、後の大規模な変更も恐れなくなる</li>
+      <li><strong>作りながら決める：</strong>完璧な仕様書を作ってから実装するより、動くものを見ながら判断を積み重ねる方が早い</li>
+    </ul>
+
+    <h2>現在の構成</h2>
+    <p>
+      HTML / CSS / JavaScript のみ。フレームワーク不使用。ファイル構成はシンプルで、<code>index.html</code>・<code>profile.html</code>・<code>style.css</code>・<code>script.js</code>・<code>blog/*.html</code>だけ。
+    </p>
+    <p>
+      サーバーもビルドも不要なので、変更してブラウザをリロードすればすぐ確認できる。この軽さが気に入っている。
+    </p>
+
+  </div>
+
+  <div class="article-tags">
+    <span class="article-tag">HTML / CSS</span>
+    <span class="article-tag">JavaScript</span>
+    <span class="article-tag">Claude Code</span>
+    <span class="article-tag">Design System</span>
+    <span class="article-tag">Canvas API</span>
+  </div>
+
+  <div class="article-footer">
+    <a href="../index.html#works">← Works に戻る</a>
+  </div>
+
+</div>
+
+<script>
+(function cursor(){
+  const cur = document.getElementById('cursor');
+  if (!cur) return;
+  let cx = innerWidth / 2, cy = innerHeight / 2;
+  let mx = cx, my = cy;
+  addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  addEventListener('mousedown', () => cur.classList.add('is-press'));
+  addEventListener('mouseup',   () => cur.classList.remove('is-press'));
+  (function loop(){
+    cx += (mx - cx) * 0.28;
+    cy += (my - cy) * 0.28;
+    cur.style.transform = `translate(${cx}px, ${cy}px) translate(-50%,-50%)`;
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => cur.classList.add('is-hover'));
+    el.addEventListener('mouseleave', () => cur.classList.remove('is-hover'));
+  });
+})();
+</script>
+<script src="../blog-side-canvas.js" defer></script>
+</body>
+</html>
