@@ -256,7 +256,7 @@
   <a href="../index.html#notes" class="article-back">← Notes 一覧に戻る</a>
 
   <div class="article-meta">
-    <span class="article-date">2026.05.31</span>
+    <span class="article-date">2026.05.31 / 2026.06.06 更新</span>
     <span class="article-tag">Shell Script</span>
     <span class="article-tag">macOS</span>
     <span class="article-tag">自動化</span>
@@ -266,7 +266,7 @@
   <p class="article-lead">
     キャッシュ・スクリーンショット・古いインストーラーが気づけば数十GBに。
     Shell Script + cron + .command ファイルで「毎週自動＆手動ワンクリック」の両立を実現しました。
-    初回実行で約 45GB を節約。
+    初回実行で約 45GB を節約。その後 PC 内を精査し削除対象を 5 → 9 ステップに拡張、累計 ~70GB 節約。
   </p>
 
   <div class="article-hero">
@@ -389,14 +389,18 @@
       <li><strong>安全な対象だけ</strong> — 再生成できるキャッシュや古いインストーラーのみ。プロジェクトファイルは触らない</li>
     </ul>
 
-    <h2>削除対象の設計</h2>
+    <h2>削除対象の設計（v2：9ステップ）</h2>
     <table>
       <tr><th>対象</th><th>理由</th></tr>
-      <tr><td>Desktop のスクリーンショット</td><td>撮ったその場で確認し終わることがほとんど。数が溜まりやすい</td></tr>
+      <tr><td>Desktop のスクリーンショット（.png・.mov）</td><td>撮ったその場で確認し終わることがほとんど。画面収録も同様に溜まりやすい</td></tr>
       <tr><td>~/Library/Caches（ユーザー系）</td><td>Google・pip・npm・Homebrew などアプリが自動再生成する</td></tr>
+      <tr><td>アプリの ShipIt キャッシュ（*.ShipIt/）</td><td>VSCode・Claude Desktop などのアップデート残骸。更新のたびに ~1GB 規模で溜まる</td></tr>
       <tr><td>Downloads の古い .dmg（30日超）</td><td>インストール済みならインストーラーは不要</td></tr>
       <tr><td>Downloads の .dlf バックアップ</td><td>アプリの自動バックアップ。古いものは価値がない</td></tr>
+      <tr><td>campfire 投稿済み動画（1日以上前）＋孤立サムネイル</td><td>YouTube にアップ済みの ~5GB/本 を自動削除。対応する動画のないサムネイルも除去</td></tr>
+      <tr><td>note-generator の output（7日以上前）</td><td>投稿済み記事・サムネイル画像は手元に置く必要がない</td></tr>
       <tr><td>ゴミ箱</td><td>削除済みのはずなのに容量を占有している</td></tr>
+      <tr><td>cleanup_cron.log の整理</td><td>毎週追記のため放置すると肥大化。直近 90 日分だけ保持</td></tr>
     </table>
     <p>
       システムの Apple 系キャッシュ（CloudKit・HomeKit など）は権限で保護されているため対象外。
@@ -410,13 +414,19 @@
       <span class="pipeline__arrow">→</span>
       <span class="pipeline__step">Caches クリア</span>
       <span class="pipeline__arrow">→</span>
+      <span class="pipeline__step">ShipIt 削除</span>
+      <span class="pipeline__arrow">→</span>
       <span class="pipeline__step">古い DMG 削除</span>
       <span class="pipeline__arrow">→</span>
       <span class="pipeline__step">.dlf 削除</span>
       <span class="pipeline__arrow">→</span>
+      <span class="pipeline__step">campfire 動画削除</span>
+      <span class="pipeline__arrow">→</span>
+      <span class="pipeline__step">note output 削除</span>
+      <span class="pipeline__arrow">→</span>
       <span class="pipeline__step">ゴミ箱を空に</span>
       <span class="pipeline__arrow">→</span>
-      <span class="pipeline__step">ログ保存</span>
+      <span class="pipeline__step">ログ整理・保存</span>
     </div>
 
     <pre><code>#!/bin/bash
@@ -452,28 +462,44 @@ read -n 1</code></pre>
       <code>crontab -e</code> で以下の1行を登録するだけ。毎週日曜の 9:00 に自動実行され、
       結果は <code>cleanup_cron.log</code> に追記されます。
     </p>
-    <pre><code>0 9 * * 0 /bin/bash /Users/tatsuya/cleanup.sh >> /Users/tatsuya/cleanup_cron.log 2>&1</code></pre>
+    <pre><code>0 9 * * 0 /bin/bash /Users/tatsuya/claude-work/cleanup.sh >> /Users/tatsuya/claude-work/cleanup_cron.log 2>&1</code></pre>
 
     <h2>初回実行の結果</h2>
 
     <div class="metrics">
       <div class="metric">
-        <span class="metric__val">~45GB</span>
-        <span class="metric__label">初回節約容量</span>
+        <span class="metric__val">~70GB</span>
+        <span class="metric__label">累計節約容量</span>
       </div>
       <div class="metric">
         <span class="metric__val">週1回</span>
         <span class="metric__label">自動実行（日曜9:00）</span>
       </div>
       <div class="metric">
-        <span class="metric__val">0クリック</span>
-        <span class="metric__label">通常運用の手間</span>
+        <span class="metric__val">9steps</span>
+        <span class="metric__label">クリーンアップ対象</span>
       </div>
     </div>
 
     <p>
-      キャッシュ 11GB・campfire 動画 25GB・Downloads 整理・アプリ残骸などを合わせて約 45GB を節約。
+      初回（2026-05-31）：キャッシュ 11GB・campfire 動画 25GB・Downloads 整理・アプリ残骸などを合わせて約 45GB を節約。
       以降は毎週日曜に自動実行されるため、意識しなくてもストレージが管理された状態を保てます。
+    </p>
+
+    <h2>v2 アップデート（2026-06-06）</h2>
+    <p>
+      PC 内を改めて精査し、削除対象を 5 → 9 ステップに拡張。新たに約 26GB を節約しました。
+    </p>
+    <ul>
+      <li><strong>ShipIt キャッシュ削除</strong> — VSCode・Claude Desktop などのアップデート残骸（合計 1.6GB）を毎回削除</li>
+      <li><strong>campfire 投稿済み動画の自動削除</strong> — YouTube アップ済みの動画（~5GB/本）を 1 日後に自動削除。孤立サムネイルも同時に除去</li>
+      <li><strong>note-generator output の自動削除</strong> — 投稿済み記事・画像を 7 日後に削除</li>
+      <li><strong>画面収録（.mov）の削除追加</strong> — スクリーンショットと同じタイミングで Desktop の画面収録も削除対象に</li>
+      <li><strong>cron ログのローテーション</strong> — cleanup_cron.log を直近 90 日分だけ保持して肥大化を防止</li>
+    </ul>
+    <p>
+      削除対象は「使い終わったら自動で消えるべきもの」を基準に選定。
+      判断が必要なもの（学習データ・開発用 node_modules など）は自動削除せず、手動で判断する運用を維持しています。
     </p>
 
     <h2>やってみてわかったこと</h2>
