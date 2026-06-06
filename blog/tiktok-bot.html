@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>投資系ショート動画をTikTokに自動投稿するシステムを作った話 | Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../style.css">
+<style>
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--nav-height);
+    background: rgba(10, 10, 20, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-border);
+    z-index: 80;
+    display: flex; align-items: center;
+  }
+  .nav__inner {
+    width: 100%; max-width: 1200px; margin: 0 auto;
+    padding: 0 28px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav__logo {
+    font-family: var(--display);
+    font-size: 20px; color: var(--ink);
+    letter-spacing: 0.02em; text-transform: uppercase;
+    text-decoration: none;
+  }
+  .nav__links { display: flex; gap: 24px; list-style: none; }
+  .nav__links a {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--ink-dim); letter-spacing: 0.1em;
+    text-transform: uppercase; text-decoration: none;
+    transition: color .2s;
+  }
+  .nav__links a:hover { color: var(--glow); }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid var(--glow-soft);
+    color: var(--glow);
+  }
+  .tag--sm { font-size: 9px; padding: 2px 8px; }
+  .btn { display: inline-block; padding: 12px 24px; text-decoration: none; }
+  .btn--outline {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    border: 1px solid var(--line-2); color: var(--ink-mid);
+    transition: border-color .25s, color .25s;
+  }
+  .btn--outline:hover { border-color: var(--glow); color: var(--glow); }
+  .article-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: calc(var(--nav-height) + 48px) 24px 80px;
+  }
+  .article-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    margin-bottom: 40px;
+    transition: color var(--transition);
+  }
+  .article-back:hover { color: var(--color-text); }
+  .article-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .article-date { font-size: 0.82rem; color: var(--color-text-muted); }
+  .article-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 20px;
+    background: var(--color-surface2);
+    color: var(--color-text-mid);
+  }
+  .article-title {
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 800;
+    line-height: 1.3;
+    margin-bottom: 12px;
+    color: var(--color-text);
+  }
+  .article-lead {
+    font-size: 1.05rem;
+    color: var(--color-text-mid);
+    line-height: 1.75;
+    margin-bottom: 40px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .article-hero {
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 40px;
+    background: linear-gradient(160deg, #0a0a14 0%, #0d0a1a 60%, #120a20 100%);
+    height: 280px;
+    position: relative;
+  }
+  .article-body h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 40px 0 12px;
+    padding-left: 14px;
+    border-left: 3px solid var(--color-text);
+  }
+  .article-body h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 28px 0 8px;
+    color: var(--color-text);
+  }
+  .article-body p {
+    font-size: 0.95rem;
+    line-height: 1.85;
+    color: var(--color-text-mid);
+    margin-bottom: 16px;
+  }
+  .article-body ul, .article-body ol {
+    padding-left: 1.4em;
+    margin-bottom: 16px;
+  }
+  .article-body li {
+    font-size: 0.95rem;
+    line-height: 1.85;
+    color: var(--color-text-mid);
+    margin-bottom: 4px;
+  }
+  .article-body code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.85em;
+    background: var(--color-surface2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--color-text);
+  }
+  .article-body pre {
+    background: #0f1117;
+    border-radius: 10px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    margin: 20px 0;
+  }
+  .article-body pre code {
+    background: none;
+    padding: 0;
+    font-size: 0.85rem;
+    color: #a8d8a8;
+    line-height: 1.7;
+  }
+  .article-body table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin: 20px 0;
+  }
+  .article-body th {
+    background: var(--color-surface);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    border: 1px solid var(--color-border);
+  }
+  .article-body td {
+    padding: 10px 14px;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-mid);
+    line-height: 1.6;
+  }
+  .article-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--color-border);
+  }
+  .article-footer {
+    margin-top: 48px;
+    text-align: center;
+  }
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    background: var(--color-surface);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 0.85rem;
+    color: var(--color-text-mid);
+  }
+  .pipeline__step {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: 500;
+    color: var(--color-text);
+    white-space: nowrap;
+  }
+  .pipeline__arrow {
+    color: var(--color-text-muted);
+    font-size: 1rem;
+  }
+</style>
+</head>
+<body>
+<canvas class="blog-canvas-left"  id="blog-canvas-left"  aria-hidden="true"></canvas>
+<canvas class="blog-canvas-right" id="blog-canvas-right" aria-hidden="true"></canvas>
+<!-- CURSOR -->
+<div class="cur" id="cursor" aria-hidden="true"></div>
+
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../index.html" class="nav__logo">Portfolio</a>
+      <ul class="nav__links">
+        <li><a href="../index.html#about">About</a></li>
+        <li><a href="../index.html#works">Works</a></li>
+        <li><a href="../index.html#notes">Notes</a></li>
+        <li><a href="../index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="article-wrap">
+
+    <a href="../index.html#notes" class="article-back">← ノート一覧に戻る</a>
+
+    <div class="article-meta">
+      <span class="article-date">2026.06.06</span>
+      <span class="article-tag">Python</span>
+      <span class="article-tag">TikTok API</span>
+      <span class="article-tag">自動化</span>
+    </div>
+
+    <h1 class="article-title">投資系ショート動画をTikTokに自動投稿するシステムを作った話</h1>
+    <p class="article-lead">
+      NISA・高配当株などの投資コンテンツ動画を、スケジュール管理しながらTikTokへ自動投稿するシステムを作りました。
+      TikTok Content Posting API（Direct Post）を使い、OAuthトークンの自動リフレッシュ・チャンクアップロード・
+      重複投稿防止まで一通り実装。launchdで毎日19時に自動実行されます。
+    </p>
+
+    <div class="article-hero">
+      <svg viewBox="0 0 720 280" preserveAspectRatio="xMidYMid slice"
+           style="position:absolute;inset:0;width:100%;height:100%"
+           xmlns="http://www.w3.org/2000/svg">
+
+        <!-- 背景グロー -->
+        <radialGradient id="ttGlow1" cx="20%" cy="50%" r="35%">
+          <stop offset="0%" stop-color="#ff2d55" stop-opacity="0.18"/>
+          <stop offset="100%" stop-color="#ff2d55" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="ttGlow2" cx="80%" cy="50%" r="35%">
+          <stop offset="0%" stop-color="#00f2ea" stop-opacity="0.15"/>
+          <stop offset="100%" stop-color="#00f2ea" stop-opacity="0"/>
+        </radialGradient>
+        <rect width="720" height="280" fill="url(#ttGlow1)"/>
+        <rect width="720" height="280" fill="url(#ttGlow2)"/>
+
+        <!-- videos.json ボックス -->
+        <rect x="18" y="40" width="120" height="78" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <text x="78" y="60" fill="rgba(255,255,255,0.5)" font-size="8" font-family="monospace" text-anchor="middle">videos.json</text>
+        <text x="78" y="76" fill="rgba(72,187,120,0.9)" font-size="8" font-family="monospace" text-anchor="middle">id: "001"</text>
+        <text x="78" y="89" fill="rgba(255,255,255,0.4)" font-size="8" font-family="monospace" text-anchor="middle">status: pending</text>
+        <text x="78" y="102" fill="rgba(255,255,255,0.4)" font-size="8" font-family="monospace" text-anchor="middle">19:00 scheduled</text>
+
+        <!-- scheduler ボックス -->
+        <rect x="18" y="136" width="120" height="50" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <text x="78" y="157" fill="rgba(255,255,255,0.5)" font-size="8" font-family="monospace" text-anchor="middle">scheduler.py</text>
+        <text x="78" y="172" fill="rgba(72,187,120,0.8)" font-size="8" font-family="monospace" text-anchor="middle">pending check</text>
+
+        <!-- 矢印 1 -->
+        <text x="150" y="82" fill="rgba(255,255,255,0.3)" font-size="18" font-family="monospace">→</text>
+
+        <!-- auth ボックス -->
+        <rect x="178" y="50" width="110" height="58" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(0,242,234,0.25)" stroke-width="1"/>
+        <text x="233" y="70" fill="rgba(0,242,234,0.8)" font-size="8" font-family="monospace" text-anchor="middle">auth.py</text>
+        <text x="233" y="84" fill="rgba(255,255,255,0.4)" font-size="8" font-family="monospace" text-anchor="middle">OAuth Token</text>
+        <text x="233" y="97" fill="rgba(72,187,120,0.7)" font-size="8" font-family="monospace" text-anchor="middle">auto refresh</text>
+
+        <!-- 矢印 2 -->
+        <text x="298" y="82" fill="rgba(255,255,255,0.3)" font-size="18" font-family="monospace">→</text>
+
+        <!-- API init ボックス -->
+        <rect x="326" y="30" width="116" height="44" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,45,85,0.3)" stroke-width="1"/>
+        <text x="384" y="50" fill="rgba(255,80,100,0.9)" font-size="8" font-family="monospace" text-anchor="middle">POST /init/</text>
+        <text x="384" y="63" fill="rgba(255,255,255,0.35)" font-size="8" font-family="monospace" text-anchor="middle">get upload_url</text>
+
+        <!-- upload ボックス -->
+        <rect x="326" y="86" width="116" height="44" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,45,85,0.3)" stroke-width="1"/>
+        <text x="384" y="106" fill="rgba(255,80,100,0.9)" font-size="8" font-family="monospace" text-anchor="middle">PUT chunks</text>
+        <text x="384" y="119" fill="rgba(255,255,255,0.35)" font-size="8" font-family="monospace" text-anchor="middle">10MB × N</text>
+
+        <!-- status ボックス -->
+        <rect x="326" y="142" width="116" height="44" rx="6" fill="rgba(255,255,255,0.05)" stroke="rgba(255,45,85,0.3)" stroke-width="1"/>
+        <text x="384" y="162" fill="rgba(255,80,100,0.9)" font-size="8" font-family="monospace" text-anchor="middle">status/fetch/</text>
+        <text x="384" y="175" fill="rgba(72,187,120,0.7)" font-size="8" font-family="monospace" text-anchor="middle">PUBLISH_COMPLETE</text>
+
+        <!-- 矢印 3 -->
+        <text x="452" y="92" fill="rgba(255,255,255,0.3)" font-size="18" font-family="monospace">→</text>
+
+        <!-- TikTok ボックス -->
+        <rect x="480" y="30" width="130" height="180" rx="8"
+              fill="rgba(10,10,20,0.6)" stroke="rgba(255,45,85,0.5)" stroke-width="1.5"/>
+        <!-- TikTok logo text -->
+        <text x="545" y="60" fill="rgba(255,255,255,0.9)" font-size="13" font-family="sans-serif" font-weight="bold" text-anchor="middle">TikTok</text>
+        <text x="545" y="75" fill="rgba(255,255,255,0.3)" font-size="7" font-family="monospace" text-anchor="middle">Content Posting API</text>
+
+        <!-- privacy badge -->
+        <rect x="500" y="88" width="90" height="16" rx="4" fill="rgba(255,200,0,0.15)"/>
+        <text x="545" y="100" fill="rgba(255,210,0,0.85)" font-size="8" font-family="monospace" font-weight="bold" text-anchor="middle">SELF_ONLY (審査前)</text>
+
+        <!-- published badge -->
+        <rect x="500" y="112" width="90" height="16" rx="4" fill="rgba(34,197,94,0.15)"/>
+        <text x="545" y="124" fill="#4ade80" font-size="8" font-family="monospace" font-weight="bold" text-anchor="middle">PUBLISHED ✓</text>
+
+        <!-- retry -->
+        <rect x="500" y="136" width="90" height="16" rx="4" fill="rgba(255,255,255,0.04)"/>
+        <text x="545" y="148" fill="rgba(255,255,255,0.35)" font-size="8" font-family="monospace" text-anchor="middle">retry x3 on fail</text>
+
+        <!-- posted_log -->
+        <rect x="500" y="160" width="90" height="16" rx="4" fill="rgba(255,255,255,0.04)"/>
+        <text x="545" y="172" fill="rgba(255,255,255,0.35)" font-size="8" font-family="monospace" text-anchor="middle">posted_log.json</text>
+
+        <!-- launchd -->
+        <rect x="480" y="222" width="130" height="26" rx="6" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <text x="545" y="239" fill="rgba(255,255,255,0.35)" font-size="9" font-family="monospace" text-anchor="middle">launchd: 19:00 daily</text>
+
+        <!-- ステータスバー -->
+        <rect x="0" y="254" width="720" height="26" fill="rgba(0,0,0,0.45)"/>
+        <rect x="12" y="261" width="85" height="13" rx="3" fill="rgba(255,45,85,0.2)"/>
+        <text x="54" y="271" fill="rgba(255,80,100,0.9)" font-size="9" font-family="monospace" text-anchor="middle">TikTok API v2</text>
+        <rect x="106" y="261" width="75" height="13" rx="3" fill="rgba(255,255,255,0.06)"/>
+        <text x="143" y="271" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace" text-anchor="middle">Python 3.11</text>
+        <text x="708" y="271" fill="rgba(255,255,255,0.3)" font-size="9" font-family="monospace" text-anchor="end">chunk: 10MB / auto</text>
+      </svg>
+    </div>
+
+    <div class="article-body">
+
+      <h2>なぜ作ったのか</h2>
+      <p>
+        NISAや高配当株などの投資コンテンツをTikTokで発信したいと考えていました。
+        しかし毎日手動で投稿するのは続かない。だったら仕組みごと作ってしまえ、というのが出発点です。
+        YouTube自動投稿（焚き火ボット）で得たノウハウをTikTokに横展開しました。
+      </p>
+
+      <h2>パイプライン全体像</h2>
+      <p>1回の実行で以下が自動で行われます。</p>
+
+      <div class="pipeline">
+        <span class="pipeline__step">videos.json</span>
+        <span class="pipeline__arrow">→</span>
+        <span class="pipeline__step">期限チェック</span>
+        <span class="pipeline__arrow">→</span>
+        <span class="pipeline__step">Token取得</span>
+        <span class="pipeline__arrow">→</span>
+        <span class="pipeline__step">API init</span>
+        <span class="pipeline__arrow">→</span>
+        <span class="pipeline__step">チャンク送信</span>
+        <span class="pipeline__arrow">→</span>
+        <span class="pipeline__step">完了確認</span>
+        <span class="pipeline__arrow">→</span>
+        <span class="pipeline__step">ログ記録</span>
+      </div>
+
+      <h2>技術スタック</h2>
+      <table>
+        <tr><th>役割</th><th>技術</th></tr>
+        <tr><td>投稿API</td><td>TikTok Content Posting API v2（Direct Post）</td></tr>
+        <tr><td>認証</td><td>OAuth 2.0 / リフレッシュトークン自動更新</td></tr>
+        <tr><td>動画アップロード</td><td>チャンク分割（10MB）PUT upload</td></tr>
+        <tr><td>スケジューリング</td><td>macOS launchd（毎日19:00）</td></tr>
+        <tr><td>動画管理</td><td>data/videos.json（pending / posted / failed）</td></tr>
+        <tr><td>環境変数</td><td>python-dotenv（.envファイル）</td></tr>
+      </table>
+
+      <h2>実装で工夫した点</h2>
+
+      <h3>OAuthトークンの自動リフレッシュ</h3>
+      <p>
+        TikTokのアクセストークンには有効期限があります。
+        <code>auth.py</code> でトークンの期限切れを事前に検知し（期限5分前）、
+        リフレッシュトークンを使って自動更新。更新されたトークンは <code>.env</code> に書き戻すため、
+        次回起動時も引き継がれます。
+      </p>
+      <pre><code>def is_token_valid(self, buffer_seconds: int = 300) -> bool:
+    return time.time() < (self.expires_at - buffer_seconds)</code></pre>
+
+      <h3>チャンク分割アップロード</h3>
+      <p>
+        TikTok APIは大きな動画ファイルをそのまま送れないため、10MB単位に分割して
+        <code>Content-Range</code> ヘッダーを付与しながら順番にPUTします。
+        ショート動画なら1〜2チャンクで完了します。
+      </p>
+      <pre><code>headers = {
+    "Content-Type": "video/mp4",
+    "Content-Range": f"bytes {start}-{end}/{video_size}",
+    "Content-Length": str(len(chunk_data)),
+}</code></pre>
+
+      <h3>重複投稿防止</h3>
+      <p>
+        <code>videos.json</code> の <code>status</code> フィールドと、
+        別ファイル <code>posted_log.json</code> の両方でIDを照合します。
+        万が一 <code>videos.json</code> が手動編集されても、
+        <code>posted_log.json</code> 側で二重チェックが働きます。
+      </p>
+
+      <h3>審査前は強制的にSELF_ONLY</h3>
+      <p>
+        TikTok Content Posting APIは審査（audit）通過前は投稿が非公開扱いになります。
+        プライバシー設定は <code>config.py</code> の <code>PRIVACY_LEVEL</code> 定数で一元管理しており、
+        審査通過後に <code>"PUBLIC_TO_EVERYONE"</code> へ変更するだけで全投稿に反映されます。
+      </p>
+
+      <h2>ディレクトリ構成</h2>
+      <pre><code>tiktok_bot/
+├── main.py          # エントリーポイント（--dry-runオプション付き）
+├── poster.py        # TikTok API投稿（init → upload → status確認）
+├── auth.py          # OAuthトークン管理・自動リフレッシュ
+├── scheduler.py     # 投稿キュー管理・重複防止
+├── config.py        # 設定定数（PRIVACY_LEVELはここ）
+├── data/
+│   ├── videos.json       # 投稿スケジュール管理
+│   └── posted_log.json   # 投稿済み記録
+├── videos/          # 動画ファイル（.gitignore対象）
+└── scripts/
+    └── com.tat.tiktokbot.plist  # launchd設定</code></pre>
+
+      <h2>ドライランで事前確認</h2>
+      <p>
+        実際に投稿せず、投稿対象・設定内容だけを確認できる <code>--dry-run</code> モードを用意しています。
+        新しい動画を追加したあとは必ずドライランで確認してから本番実行しています。
+      </p>
+      <pre><code>python3 main.py --dry-run
+
+# 出力例
+[DRY-RUN] 投稿対象:
+  ID       : 001
+  ファイル : videos/nisa_intro.mp4
+  タイトル : 【NISA完全解説】新NISAの賢い使い方
+  ハッシュタグ: #NISA #新NISA #投資初心者
+  プライバシー: SELF_ONLY</code></pre>
+
+      <h2>やってみてわかったこと</h2>
+      <ul>
+        <li>TikTok APIの審査は申請から最長10営業日かかる。コンテンツカテゴリが「金融・投資」だとより丁寧な説明が必要</li>
+        <li>Direct Post方式はファイルを直接アップロードするため、URLプル方式より実装が複雑だが、外部公開URLが不要なのでローカル運用に向いている</li>
+        <li>投稿ステータスは非同期確認。<code>PROCESSING_UPLOAD</code> → <code>PUBLISH_COMPLETE</code> まで数秒〜数十秒かかる</li>
+        <li>OAuthのリダイレクトURIは開発時は <code>https://localhost/callback</code> で問題なかった</li>
+      </ul>
+
+      <h2>今後やりたいこと</h2>
+      <ul>
+        <li>note-generator との連携：AI生成した投資記事をTikTokスクリプトに変換して動画化まで自動化</li>
+        <li>審査通過後に PUBLIC_TO_EVERYONE で本番運用開始</li>
+        <li>投稿後のインプレッション数をAPIで取得してコンテンツを自動最適化</li>
+      </ul>
+
+    </div>
+
+    <div class="article-tags">
+      <span class="tag tag--sm">Python</span>
+      <span class="tag tag--sm">TikTok API</span>
+      <span class="tag tag--sm">OAuth 2.0</span>
+      <span class="tag tag--sm">launchd</span>
+      <span class="tag tag--sm">自動化</span>
+      <span class="tag tag--sm">投資</span>
+      <span class="tag tag--sm">個人開発</span>
+    </div>
+
+    <div class="article-footer">
+      <a href="../index.html#notes" class="btn btn--outline">← ノート一覧に戻る</a>
+    </div>
+
+  </div>
+
+<script>
+(function cursor(){
+  const cur = document.getElementById('cursor');
+  if (!cur) return;
+  let cx = innerWidth / 2, cy = innerHeight / 2;
+  let mx = cx, my = cy;
+  addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  addEventListener('mousedown', () => cur.classList.add('is-press'));
+  addEventListener('mouseup',   () => cur.classList.remove('is-press'));
+  (function loop(){
+    cx += (mx - cx) * 0.28;
+    cy += (my - cy) * 0.28;
+    cur.style.transform = `translate(${cx}px, ${cy}px) translate(-50%,-50%)`;
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => cur.classList.add('is-hover'));
+    el.addEventListener('mouseleave', () => cur.classList.remove('is-hover'));
+  });
+})();
+</script>
+<script src="../blog-side-canvas.js" defer></script>
+</body>
+</html>

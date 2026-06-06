@@ -94,7 +94,7 @@
 <section class="works" id="works">
   <div class="works__header">
     <span class="works__label">Works</span>
-    <span class="works__count">11 projects</span>
+    <span class="works__count">12 projects</span>
   </div>
 
   <div class="works__grid">
@@ -402,6 +402,36 @@
       </div>
     </article>
 
+    <article class="work work--small" aria-label="TikTok Auto Poster">
+      <div class="work__cover" id="wc-12">
+        <div class="work__cover-overlay">
+          <div class="work__cover-num">W—12 / Bot</div>
+          <h3 class="work__cover-title">TikTok Auto Poster</h3>
+        </div>
+      </div>
+      <div class="work__body">
+        <p class="work__desc">投資系ショート動画を TikTok に自動投稿するボット。TikTok Content Posting API（Direct Post）でチャンクアップロード、OAuthトークン自動リフレッシュ、重複防止を実装。launchd で毎日 19:00 に自動実行。</p>
+        <div class="work__insight">
+          <span class="wi-k">課題</span><span class="wi-v">NISA・高配当株などの投資動画を毎日手動投稿するのが続かない</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">判断</span><span class="wi-v">TikTok API Direct Post + videos.json でスケジュール管理。審査前は SELF_ONLY で安全運用</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">結果</span><span class="wi-v">--dry-run で事前確認 · 最大3回リトライ · launchd で毎日 19:00 自動実行</span>
+        </div>
+        <div class="work__tags">
+          <span>Python</span><span>TikTok API</span><span>OAuth 2.0</span><span>launchd</span><span>自動化</span>
+        </div>
+        <div class="work__footer">
+          <span class="work__year">2026</span>
+          <div class="work__links">
+            <a href="blog/tiktok-bot.html">Note ↗</a>
+          </div>
+        </div>
+      </div>
+    </article>
+
     <article class="work work--small" aria-label="This Site (Portfolio)">
       <div class="work__cover" id="wc-5">
         <div class="work__cover-overlay">
@@ -442,62 +472,68 @@
     <span class="sect--blog__label">Notes</span>
   </div>
   <div class="blog">
-    <a class="blog__item" href="blog/x-content-generator.html">
+    <a class="blog__item" href="blog/tiktok-bot.html">
       <span class="blog__num">N—00</span>
+      <span class="blog__date">2026.06.06</span>
+      <span class="blog__title">投資系ショート動画を TikTok に自動投稿するシステムを作った話</span>
+      <span class="blog__arrow">→</span>
+    </a>
+    <a class="blog__item" href="blog/x-content-generator.html">
+      <span class="blog__num">N—01</span>
       <span class="blog__date">2026.06.06</span>
       <span class="blog__title">テンプレート×ランダム生成でX投稿文案を自動生成するCLIツールを作った話</span>
       <span class="blog__arrow">→</span>
     </a>
     <a class="blog__item" href="blog/mac-cleaner.html">
-      <span class="blog__num">N—01</span>
+      <span class="blog__num">N—02</span>
       <span class="blog__date">2026.05.31</span>
       <span class="blog__title">macのストレージを自動で整理するクリーンアップスクリプトを作った話</span>
       <span class="blog__arrow">→</span>
     </a>
     <a class="blog__item" href="blog/keiba-ai.html">
-      <span class="blog__num">N—02</span>
+      <span class="blog__num">N—03</span>
       <span class="blog__date">2026.05.27</span>
       <span class="blog__title">PythonとLightGBMで競馬予測AIを作った話</span>
       <span class="blog__arrow">→</span>
     </a>
     <a class="blog__item" href="blog/rtx810-security.html">
-      <span class="blog__num">N—03</span>
+      <span class="blog__num">N—04</span>
       <span class="blog__date">2026.05.31</span>
       <span class="blog__title">YAMAHA RTX810 のセキュリティ強化と VPN 構築をした話</span>
       <span class="blog__arrow">→</span>
     </a>
     <a class="blog__item" href="blog/portfolio.html">
-      <span class="blog__num">N—04</span>
+      <span class="blog__num">N—05</span>
       <span class="blog__date">2026.05.27</span>
       <span class="blog__title">Claude Code と壁打ちしながらポートフォリオサイトを作った話</span>
       <span class="blog__arrow">→</span>
     </a>
     <a class="blog__item" href="blog/campfire.html">
-      <span class="blog__num">N—05</span>
+      <span class="blog__num">N—06</span>
       <span class="blog__date">2026.05.25</span>
       <span class="blog__title">焚き火 ASMR 動画を YouTube に自動投稿するシステムを作った話</span>
       <span class="blog__arrow">→</span>
     </a>
     <a class="blog__item" href="blog/saa-quiz.html">
-      <span class="blog__num">N—06</span>
+      <span class="blog__num">N—07</span>
       <span class="blog__date">2026.05.24</span>
       <span class="blog__title">Next.js + Supabase で AWS SAA クイズアプリを作った話</span>
       <span class="blog__arrow">→</span>
     </a>
     <a class="blog__item" href="blog/mansion-radar.html">
-      <span class="blog__num">N—07</span>
+      <span class="blog__num">N—08</span>
       <span class="blog__date">2026.05.24</span>
       <span class="blog__title">SUUMO と Notion を連携させ、マンション購入リサーチを自動化した話</span>
       <span class="blog__arrow">→</span>
     </a>
     <a class="blog__item" href="blog/btc-bot.html">
-      <span class="blog__num">N—08</span>
+      <span class="blog__num">N—09</span>
       <span class="blog__date">2026.05.24</span>
       <span class="blog__title">Python で BTC 自動売買ボットを作った話</span>
       <span class="blog__arrow">→</span>
     </a>
     <a class="blog__item" href="blog/note-generator.html">
-      <span class="blog__num">N—09</span>
+      <span class="blog__num">N—10</span>
       <span class="blog__date">2026.05.27</span>
       <span class="blog__title">Gemini API で Note 投資記事を自動生成するシステムを作った話</span>
       <span class="blog__arrow">→</span>
