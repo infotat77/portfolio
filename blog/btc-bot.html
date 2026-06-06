@@ -249,7 +249,7 @@
     <a href="../index.html#blog" class="article-back">← ブログ一覧に戻る</a>
 
     <div class="article-meta">
-      <span class="article-date">2026.06.06 updated</span>
+      <span class="article-date">2026.06.06 v3 updated</span>
       <span class="article-tag">Python</span>
       <span class="article-tag">自動売買</span>
       <span class="article-tag">個人開発</span>
@@ -258,7 +258,7 @@
     <h1 class="article-title">PythonでBTC自動売買ボットを作った話</h1>
     <p class="article-lead">
       GMOコインのAPIを使って、テクニカル指標に基づくビットコイン自動売買ボットをゼロから開発しました。
-      11種のシグナル・複数戦略の独立運用・バックテスト・LINE通知・実運用移行判断・BTC再投資自動化まで、作って気づいたことをまとめます。
+      EMA200・ATR・ADX・ケリー基準・出来高フィルターなど15種の品質強化フィルターを実装し、シミュレーション精度を高めています。
     </p>
 
     <!-- チャートイラスト -->
@@ -447,11 +447,35 @@ strategy = {"mode": "independent", "strategies": ["rsi", "stochastic"]}</code></
         JPY建ての利益をそのまま持つのではなく、BTC枚数として積み上げていく運用ができます。
       </p>
 
-      <h3>週次バックテスト自動実行</h3>
+      <h3>週次バックテスト自動実行 + ウォークフォワード検証</h3>
       <p>
-        cronで毎週日曜の朝7時にバックテストを自動実行し、結果をJSONで保存します。
-        相場環境の変化によって戦略の有効性が変わるため、定期的に再検証する仕組みを組み込みました。
+        cronで毎週日曜の朝7時にバックテストを自動実行し、最良パラメーターをconfig.jsonに自動反映します。
+        7:30にはウォークフォワード検証も実行し、バックテストの過学習がないかを確認します。
+        データを前半（最適化）・後半（検証）に分割し、検証期間でも勝率50%以上・損益プラスであることを毎週チェックします。
       </p>
+
+      <h3>15種の品質強化フィルター</h3>
+      <p>
+        シグナルの精度を高めるために、以下のフィルターを重ねて実装しました。すべてconfig.jsonでON/OFFと閾値を変更できます。
+      </p>
+      <table>
+        <tr><th>フィルター</th><th>効果</th></tr>
+        <tr><td>EMA200トレンドフィルター</td><td>大局トレンドと逆方向のシグナルを除外</td></tr>
+        <tr><td>ATRベース動的SL/TP</td><td>ボラティリティに応じてSL/TPを自動調整</td></tr>
+        <tr><td>ADX相場判定＋戦略自動切替</td><td>強トレンド時はEMAクロス系、レンジ時はRSI系に自動切替</td></tr>
+        <tr><td>シグナル2本確認</td><td>2足連続でシグナルが出た時だけエントリー</td></tr>
+        <tr><td>ケリー基準ポジションサイジング</td><td>直近勝率に応じてtrade_sizeを自動調整</td></tr>
+        <tr><td>出来高フィルター</td><td>平均出来高未満の弱いシグナルを除外</td></tr>
+        <tr><td>週末フィルター</td><td>土日はエントリーしない</td></tr>
+        <tr><td>クールダウン（SL後）</td><td>SL発動後N本は新規エントリーしない</td></tr>
+        <tr><td>損益比動的調整</td><td>強トレンド時はTPを1.5倍に拡大</td></tr>
+        <tr><td>トレーリングストップ</td><td>高値から1%下落で自動決済</td></tr>
+        <tr><td>ボラティリティフィルター</td><td>ATR/価格比が低/高すぎる時はスキップ</td></tr>
+        <tr><td>日次損失リミット</td><td>1日¥3,000の損失でその日停止</td></tr>
+        <tr><td>CFDショート</td><td>下降トレンドでも利益を狙える（検証中）</td></tr>
+        <tr><td>ピラミッディング</td><td>含み益が出たらポジションを積み増し</td></tr>
+        <tr><td>セッション別パラメーター</td><td>東京・ロンドン・NYセッションで設定を変更可能</td></tr>
+      </table>
 
       <h2>やってみてわかったこと</h2>
       <ul>
@@ -459,15 +483,16 @@ strategy = {"mode": "independent", "strategies": ["rsi", "stochastic"]}</code></
         <li><strong>手数料を考慮しないバックテストは意味がない</strong>。5分足では手数料だけで月数百円の赤字になる</li>
         <li>時間足の選択がパラメーター調整より遥かに重要だった</li>
         <li>independentモードにすると戦略間でシグナルが干渉しないため、より自然な運用ができる</li>
+        <li>フィルターは1つより複数重ねた方が精度が上がる。ただし重ねすぎるとシグナル自体が出なくなる</li>
+        <li>「バックテストで良くてもライブで負ける」問題はウォークフォワード検証で検出できる</li>
         <li>「いつ実運用に切り替えるか」の基準をコードに落とし込むことで、感情的な判断を排除できる</li>
-        <li>APIキーの管理（<code>.env</code> ファイル分離・環境変数化）はセキュリティの基本として徹底した</li>
       </ul>
 
       <h2>今後やりたいこと</h2>
       <ul>
-        <li>複数通貨ペアへの対応（ETH・XRP など）</li>
         <li>dry_run終了後の実運用移行と結果検証</li>
-        <li>勝率連動のポジションサイジング（直近成績に応じてtrade_sizeを自動調整）</li>
+        <li>CFDショートの有効化（下降トレンドでの運用）</li>
+        <li>複数通貨ペアへの対応（ETH・XRP など）</li>
       </ul>
 
     </div>
@@ -482,6 +507,8 @@ strategy = {"mode": "independent", "strategies": ["rsi", "stochastic"]}</code></
       <span class="tag tag--sm">バックテスト</span>
       <span class="tag tag--sm">LINE API</span>
       <span class="tag tag--sm">LaunchAgent</span>
+      <span class="tag tag--sm">ATR / ADX</span>
+      <span class="tag tag--sm">ケリー基準</span>
       <span class="tag tag--sm">個人開発</span>
     </div>
 
