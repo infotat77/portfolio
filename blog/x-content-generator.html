@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>テンプレート×ランダム生成でX投稿文案を自動生成するCLIツールを作った話 | Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../style.css">
+<style>
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--nav-height);
+    background: rgba(10, 10, 20, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-border);
+    z-index: 80;
+    display: flex; align-items: center;
+  }
+  .nav__inner {
+    width: 100%; max-width: 1200px; margin: 0 auto;
+    padding: 0 28px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav__logo {
+    font-family: var(--display);
+    font-size: 20px; color: var(--ink);
+    letter-spacing: 0.02em; text-transform: uppercase;
+    text-decoration: none;
+  }
+  .nav__links { display: flex; gap: 24px; list-style: none; }
+  .nav__links a {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--ink-dim); letter-spacing: 0.1em;
+    text-transform: uppercase; text-decoration: none;
+    transition: color .2s;
+  }
+  .nav__links a:hover { color: var(--glow); }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid var(--glow-soft);
+    color: var(--glow);
+  }
+  .tag--sm { font-size: 9px; padding: 2px 8px; }
+  .btn { display: inline-block; padding: 12px 24px; text-decoration: none; }
+  .btn--outline {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    border: 1px solid var(--line-2); color: var(--ink-mid);
+    transition: border-color .25s, color .25s;
+  }
+  .btn--outline:hover { border-color: var(--glow); color: var(--glow); }
+  .pipeline {
+    display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap;
+    background: var(--color-surface);
+    border-radius: 10px;
+    padding: 16px 20px; margin: 20px 0;
+    font-size: 0.85rem; color: var(--color-text-mid);
+  }
+  .pipeline__step {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: 500; color: var(--color-text);
+    white-space: nowrap;
+  }
+  .pipeline__arrow { color: var(--color-text-muted); }
+  .article-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: calc(var(--nav-height) + 48px) 24px 80px;
+  }
+  .article-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    margin-bottom: 40px;
+    transition: color var(--transition);
+  }
+  .article-back:hover { color: var(--color-text); }
+  .article-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .article-date { font-size: 0.82rem; color: var(--color-text-muted); }
+  .article-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 20px;
+    background: var(--color-surface2);
+    color: var(--color-text-mid);
+  }
+  .article-title {
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 800;
+    line-height: 1.3;
+    margin-bottom: 12px;
+    color: var(--color-text);
+  }
+  .article-lead {
+    font-size: 1.05rem;
+    color: var(--color-text-mid);
+    line-height: 1.75;
+    margin-bottom: 40px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .article-hero {
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 40px;
+    background: linear-gradient(160deg, #080810 0%, #0d0d20 60%, #0a0a18 100%);
+    height: 280px;
+    position: relative;
+  }
+  .article-body h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 40px 0 12px;
+    padding-left: 14px;
+    border-left: 3px solid var(--color-text);
+  }
+  .article-body h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 28px 0 8px;
+    color: var(--color-text);
+  }
+  .article-body p {
+    font-size: 0.95rem;
+    line-height: 1.85;
+    color: var(--color-text-mid);
+    margin-bottom: 16px;
+  }
+  .article-body ul, .article-body ol {
+    padding-left: 1.4em;
+    margin-bottom: 16px;
+  }
+  .article-body li {
+    font-size: 0.95rem;
+    line-height: 1.85;
+    color: var(--color-text-mid);
+    margin-bottom: 4px;
+  }
+  .article-body code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.85em;
+    background: var(--color-surface2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--color-text);
+  }
+  .article-body pre {
+    background: #0f1117;
+    border-radius: 10px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    margin: 20px 0;
+  }
+  .article-body pre code {
+    background: none;
+    padding: 0;
+    font-size: 0.85rem;
+    color: #a8d8a8;
+    line-height: 1.7;
+  }
+  .article-body table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin: 20px 0;
+  }
+  .article-body th {
+    background: var(--color-surface);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    border: 1px solid var(--color-border);
+  }
+  .article-body td {
+    padding: 10px 14px;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-mid);
+    line-height: 1.6;
+  }
+  .article-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--color-border);
+  }
+  .article-footer {
+    margin-top: 48px;
+    text-align: center;
+  }
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 24px 0;
+  }
+  .metric {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .metric__val {
+    font-family: var(--mono, monospace);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1d9bf0;
+    display: block;
+  }
+  .metric__label {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    margin-top: 4px;
+    display: block;
+  }
+</style>
+</head>
+<body>
+<canvas class="blog-canvas-left"  id="blog-canvas-left"  aria-hidden="true"></canvas>
+<canvas class="blog-canvas-right" id="blog-canvas-right" aria-hidden="true"></canvas>
+<div class="cur" id="cursor" aria-hidden="true"></div>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <a href="../index.html" class="nav__logo">Portfolio</a>
+    <ul class="nav__links">
+      <li><a href="../index.html#works">Works</a></li>
+      <li><a href="../index.html#notes">Notes</a></li>
+      <li><a href="../index.html#contact">Hire</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="article-wrap">
+
+  <a href="../index.html#notes" class="article-back">← Notes 一覧に戻る</a>
+
+  <div class="article-meta">
+    <span class="article-date">2026.06.06</span>
+    <span class="article-tag">Python</span>
+    <span class="article-tag">CLI</span>
+    <span class="article-tag">自動化</span>
+  </div>
+
+  <h1 class="article-title">テンプレート×ランダム生成でX投稿文案を自動生成するCLIツールを作った話</h1>
+  <p class="article-lead">
+    投資系Xアカウントの投稿ネタが続かない問題を、Claude API不使用・完全ローカルのテンプレートエンジンで解決。
+    インタラクティブな採用レビュー・週間スケジュール一括生成・重複回避履歴管理まで備えた CLI ツールです。
+  </p>
+
+  <div class="article-hero">
+    <svg viewBox="0 0 720 280" preserveAspectRatio="xMidYMid slice"
+         style="position:absolute;inset:0;width:100%;height:100%"
+         xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="xGlow" cx="50%" cy="50%" r="55%">
+          <stop offset="0%" stop-color="#1d9bf0" stop-opacity="0.12"/>
+          <stop offset="100%" stop-color="#1d9bf0" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="720" height="280" fill="url(#xGlow)"/>
+
+      <!-- テンプレートファイル -->
+      <rect x="20" y="20" width="210" height="240" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(29,155,240,0.25)" stroke-width="1"/>
+      <text x="125" y="42" fill="rgba(29,155,240,0.6)" font-size="10" font-family="monospace" text-anchor="middle">nisa.txt</text>
+      <line x1="20" y1="50" x2="230" y2="50" stroke="rgba(29,155,240,0.15)" stroke-width="1"/>
+      <text x="36" y="70" fill="rgba(255,255,255,0.45)" font-size="8.5" font-family="monospace">NISAを始めて{period}が</text>
+      <text x="36" y="84" fill="rgba(255,255,255,0.45)" font-size="8.5" font-family="monospace">経ちました。{change}</text>
+      <text x="36" y="98" fill="rgba(29,155,240,0.5)" font-size="8.5" font-family="monospace">#{tag1} #{tag2}</text>
+      <line x1="36" y1="108" x2="214" y2="108" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="36" y="124" fill="rgba(255,255,255,0.35)" font-size="8.5" font-family="monospace">{monthly}をNISAに積み</text>
+      <text x="36" y="138" fill="rgba(255,255,255,0.35)" font-size="8.5" font-family="monospace">立てるだけで{years}年後</text>
+      <text x="36" y="152" fill="rgba(29,155,240,0.4)" font-size="8.5" font-family="monospace">#{tag1} #{tag2}</text>
+      <line x1="36" y1="162" x2="214" y2="162" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="36" y="178" fill="rgba(255,255,255,0.25)" font-size="8.5" font-family="monospace">暴落が来たらNISAは</text>
+      <text x="36" y="192" fill="rgba(255,255,255,0.25)" font-size="8.5" font-family="monospace">「セール中」と思う...</text>
+      <text x="125" y="236" fill="rgba(255,255,255,0.2)" font-size="8" font-family="monospace" text-anchor="middle">8 templates</text>
+
+      <!-- 矢印＋生成処理 -->
+      <text x="244" y="148" fill="rgba(29,155,240,0.7)" font-size="20" font-family="monospace">→</text>
+      <rect x="270" y="110" width="180" height="72" rx="6" fill="rgba(29,155,240,0.06)" stroke="rgba(29,155,240,0.2)" stroke-width="1"/>
+      <text x="360" y="130" fill="rgba(29,155,240,0.7)" font-size="9" font-family="monospace" text-anchor="middle">generator.py</text>
+      <text x="360" y="148" fill="rgba(255,255,255,0.4)" font-size="8" font-family="monospace" text-anchor="middle">random.choice(templates)</text>
+      <text x="360" y="163" fill="rgba(255,255,255,0.4)" font-size="8" font-family="monospace" text-anchor="middle">re.sub(placeholders)</text>
+      <text x="360" y="175" fill="rgba(255,255,255,0.3)" font-size="8" font-family="monospace" text-anchor="middle">len(text) ≤ 140</text>
+      <text x="464" y="148" fill="rgba(29,155,240,0.7)" font-size="20" font-family="monospace">→</text>
+
+      <!-- 生成結果 -->
+      <rect x="490" y="20" width="210" height="240" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(29,155,240,0.3)" stroke-width="1"/>
+      <text x="595" y="42" fill="rgba(29,155,240,0.7)" font-size="10" font-family="monospace" text-anchor="middle">投稿案 1/5</text>
+      <line x1="490" y1="50" x2="700" y2="50" stroke="rgba(29,155,240,0.2)" stroke-width="1"/>
+      <text x="506" y="72" fill="rgba(255,255,255,0.7)" font-size="8.5" font-family="monospace">NISAを始めて1年が経ち</text>
+      <text x="506" y="86" fill="rgba(255,255,255,0.7)" font-size="8.5" font-family="monospace">ました。長期思考が変わ</text>
+      <text x="506" y="100" fill="rgba(255,255,255,0.7)" font-size="8.5" font-family="monospace">りました。📈</text>
+      <text x="506" y="116" fill="rgba(29,155,240,0.8)" font-size="8.5" font-family="monospace">#新NISA #積立投資</text>
+      <line x1="506" y1="126" x2="684" y2="126" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+      <text x="506" y="142" fill="rgba(255,255,255,0.35)" font-size="8" font-family="monospace">文字数：55字 ✓</text>
+
+      <!-- インタラクティブメニュー -->
+      <rect x="490" y="155" width="210" height="28" rx="4" fill="rgba(29,155,240,0.08)"/>
+      <text x="595" y="173" fill="rgba(29,155,240,0.6)" font-size="8" font-family="monospace" text-anchor="middle">[a]採用  [r]再生成  [s]スキップ</text>
+
+      <!-- 週間スケジュール表示 -->
+      <rect x="490" y="193" width="210" height="57" rx="4" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+      <text x="595" y="208" fill="rgba(255,255,255,0.3)" font-size="8" font-family="monospace" text-anchor="middle">week_20260606.txt</text>
+      <text x="506" y="222" fill="rgba(255,255,255,0.25)" font-size="7.5" font-family="monospace">月: nisa  火: dividend</text>
+      <text x="506" y="234" fill="rgba(255,255,255,0.25)" font-size="7.5" font-family="monospace">水: mindset  木: tips</text>
+      <text x="506" y="246" fill="rgba(255,255,255,0.2)" font-size="7.5" font-family="monospace">金〜日: rotation...</text>
+
+      <!-- ステータスバー -->
+      <rect x="0" y="254" width="720" height="26" fill="rgba(0,0,0,0.45)"/>
+      <rect x="12" y="261" width="80" height="13" rx="3" fill="rgba(29,155,240,0.12)"/>
+      <text x="52" y="271" fill="rgba(29,155,240,0.6)" font-size="9" font-family="monospace" text-anchor="middle">Python 3.x</text>
+      <rect x="100" y="261" width="70" height="13" rx="3" fill="rgba(255,255,255,0.05)"/>
+      <text x="135" y="271" fill="rgba(255,255,255,0.35)" font-size="9" font-family="monospace" text-anchor="middle">no API key</text>
+      <text x="708" y="271" fill="rgba(255,255,255,0.25)" font-size="9" font-family="monospace" text-anchor="end">argparse · templates</text>
+    </svg>
+  </div>
+
+  <div class="article-body">
+
+    <h2>なぜ作ったのか</h2>
+    <p>
+      投資系の X アカウントへ定期投稿しようとすると、毎回「何を書けばいいか」で手が止まる。
+      Claude API を使って生成するという選択肢もあったが、API コストが積み重なること、
+      そして投稿文は人間がレビューして初めて価値が出ると思い、
+      「AIに文章を作らせる」のではなく「テンプレートとランダム組み合わせで文案を提示する」ツールにすることにした。
+    </p>
+
+    <h2>設計方針</h2>
+    <ul>
+      <li><strong>API 不使用・完全ローカル</strong> — 外部サービスへの依存ゼロ。コスト永久ゼロ</li>
+      <li><strong>テンプレート＋プレースホルダー</strong> — 投稿の「型」は人間が書き、値だけランダムに差し替える</li>
+      <li><strong>140 字チェック</strong> — 生成後に自動計測。超えても警告するだけで止めない（確認できることが大事）</li>
+      <li><strong>人間がレビューして手動投稿</strong> — 自動投稿はしない。文案を見て選ぶ体験を設計する</li>
+    </ul>
+
+    <h2>ファイル構成</h2>
+
+    <div class="pipeline">
+      <span class="pipeline__step">templates/*.txt</span>
+      <span class="pipeline__arrow">→</span>
+      <span class="pipeline__step">generator.py</span>
+      <span class="pipeline__arrow">→</span>
+      <span class="pipeline__step">main.py (CLI)</span>
+      <span class="pipeline__arrow">→</span>
+      <span class="pipeline__step">stdout / output/</span>
+    </div>
+
+    <table>
+      <tr><th>ファイル</th><th>役割</th></tr>
+      <tr><td><code>templates/nisa.txt</code> 他3本</td><td><code>---</code> 区切りのテンプレート群（各8〜9件）</td></tr>
+      <tr><td><code>config.py</code></td><td>PLACEHOLDERS（候補値リスト）・HASHTAGS・WEEKLY_SCHEDULE</td></tr>
+      <tr><td><code>generator.py</code></td><td>テンプレート読込・<code>re.sub</code> によるプレースホルダー置換・履歴管理</td></tr>
+      <tr><td><code>main.py</code></td><td>argparse CLI・インタラクティブモード・週間生成ロジック</td></tr>
+      <tr><td><code>output/history.json</code></td><td>採用済みテンプレートのハッシュと使用日時を記録</td></tr>
+    </table>
+
+    <h2>テンプレートの仕組み</h2>
+    <p>
+      <code>templates/nisa.txt</code> のように、テーマごとのファイルに投稿の「型」を <code>---</code> で区切って複数書く。
+      プレースホルダーは <code>{period}</code> や <code>{tag1}</code> のように記述し、
+      <code>config.py</code> の候補値リストからランダムに差し替える。
+    </p>
+    <pre><code>NISAを始めて{period}が経ちました。意識して変わったのは{change}です。📈 #{tag1} #{tag2}
+---
+{monthly}をNISAに積み立てるだけで、{years}年後には大きく変わります。💪 #{tag1} #{tag2}
+---
+暴落が来たらNISAは「セール中」と思うようにしています🛒 #{tag1} #{tag2}</code></pre>
+
+    <pre><code># config.py（抜粋）
+PLACEHOLDERS = {
+    "period": ["3ヶ月", "半年", "1年", "2年", "3年"],
+    "change": ["節約習慣", "長期思考", "複利の力への気づき"],
+    ...
+}
+HASHTAGS = {
+    "nisa": ["NISA", "新NISA", "積立投資", "資産形成", ...],
+}</code></pre>
+
+    <h2>3つの主要機能</h2>
+
+    <h3>① 通常生成モード</h3>
+    <p>
+      テーマと件数を指定するだけ。重複回避のため、直近 14 日間に採用したテンプレートは
+      優先的に除外される（使い切ったらリセット）。
+    </p>
+    <pre><code>python3 main.py --theme nisa --count 5 --save</code></pre>
+
+    <h3>② インタラクティブモード（<code>--interactive</code>）</h3>
+    <p>
+      1 件ずつ表示し、キー操作でレビューできる。採用（<code>a</code>）・再生成（<code>r</code>）・
+      スキップ（<code>s</code>）・終了（<code>q</code>）。
+      採用した瞬間に履歴へ記録され、次の生成に反映される。
+    </p>
+    <pre><code>====================================
+【投稿案 2/5】
+---
+毎月5万円をNISAに積み立てるだけで、30年後には大きく変わります。💪
+#新NISA #長期投資
+---
+文字数：55字
+====================================
+[a] 採用  [r] 再生成  [s] スキップ  [q] 終了  > </code></pre>
+
+    <h3>③ 週間スケジュール生成（<code>--week</code>）</h3>
+    <p>
+      月〜日の 7 日分をテーマローテーションで一気に生成し、<code>output/week_YYYYMMDD.txt</code> に保存。
+      1 週分のポストストックが一発で完成する。
+    </p>
+    <pre><code>python3 main.py --week</code></pre>
+
+    <h2>重複回避の設計</h2>
+    <p>
+      採用した投稿は、使ったテンプレートの MD5 ハッシュ（先頭 8 桁）を
+      <code>output/history.json</code> に記録する。次回生成時に直近 14 日以内のハッシュと
+      照合し、フレッシュなテンプレートを優先選択する。全テンプレートが使い終わったら
+      プールをリセット（同じ文が繰り返されない工夫）。
+    </p>
+    <pre><code># output/history.json（抜粋）
+{
+  "nisa": [
+    { "hash": "950836d8", "used_at": "2026-06-06T13:34:14", "preview": "NISAは「投資のハードル」" }
+  ]
+}</code></pre>
+
+    <h2>数字で見る</h2>
+    <div class="metrics">
+      <div class="metric">
+        <span class="metric__val">4</span>
+        <span class="metric__label">テーマ数</span>
+      </div>
+      <div class="metric">
+        <span class="metric__val">33</span>
+        <span class="metric__label">テンプレート総数</span>
+      </div>
+      <div class="metric">
+        <span class="metric__val">¥0</span>
+        <span class="metric__label">API コスト</span>
+      </div>
+    </div>
+
+    <h2>やってみてわかったこと</h2>
+    <ul>
+      <li>テンプレートの「型」と候補値の組み合わせだけで、思った以上にバリエーションが生まれる</li>
+      <li>インタラクティブモードを作ったことで「使う」楽しさが生まれた。採用 / 再生成 を繰り返す体験がちょうどよい</li>
+      <li>重複回避のハッシュ管理は単純だが効果大。同じ文が2日連続で出てくるストレスがなくなった</li>
+      <li><code>getch()</code>（tty/termios）はキーを押すだけで反応するので UX がよい</li>
+      <li>Python 3.9 では <code>dict | None</code> 記法が使えない。<code>from __future__ import annotations</code> を忘れずに</li>
+    </ul>
+
+    <h2>今後やりたいこと</h2>
+    <ul>
+      <li>テーマごとの採用率・人気テンプレートをログから可視化</li>
+      <li>CSV エクスポートで Buffer などのスケジューラーに直接インポート</li>
+      <li>Threads / Bluesky 向けテーマの追加（文字数制限が異なるので調整が必要）</li>
+    </ul>
+
+  </div>
+
+  <div class="article-tags">
+    <span class="tag tag--sm">Python</span>
+    <span class="tag tag--sm">CLI</span>
+    <span class="tag tag--sm">argparse</span>
+    <span class="tag tag--sm">X / Twitter</span>
+    <span class="tag tag--sm">自動化</span>
+    <span class="tag tag--sm">テンプレートエンジン</span>
+    <span class="tag tag--sm">個人開発</span>
+  </div>
+
+  <div class="article-footer">
+    <a href="../index.html#notes" class="btn btn--outline">← Notes 一覧に戻る</a>
+  </div>
+
+</div>
+
+<script>
+(function cursor(){
+  const cur = document.getElementById('cursor');
+  if (!cur) return;
+  let cx = innerWidth / 2, cy = innerHeight / 2;
+  let mx = cx, my = cy;
+  addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  addEventListener('mousedown', () => cur.classList.add('is-press'));
+  addEventListener('mouseup',   () => cur.classList.remove('is-press'));
+  (function loop(){
+    cx += (mx - cx) * 0.28;
+    cy += (my - cy) * 0.28;
+    cur.style.transform = `translate(${cx}px, ${cy}px) translate(-50%,-50%)`;
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => cur.classList.add('is-hover'));
+    el.addEventListener('mouseleave', () => cur.classList.remove('is-hover'));
+  });
+})();
+</script>
+<script src="../blog-side-canvas.js" defer></script>
+</body>
+</html>
