@@ -94,7 +94,7 @@
 <section class="works" id="works">
   <div class="works__header">
     <span class="works__label">Works</span>
-    <span class="works__count">09 projects</span>
+    <span class="works__count">10 projects</span>
   </div>
 
   <div class="works__grid">
@@ -321,15 +321,15 @@
         </div>
       </div>
       <div class="work__body">
-        <p class="work__desc">キャッシュ・スクリーンショット・古いインストーラーを毎週日曜に自動削除。.command ファイルでダブルクリック即実行も可能。初回で約 45GB 節約。</p>
+        <p class="work__desc">9ステップの自動クリーンアップ。キャッシュ・スクリーンショット・ShipItキャッシュ・YouTube投稿済み動画・孤立サムネイル・note記事など毎週日曜に自動削除。</p>
         <div class="work__insight">
           <span class="wi-k">課題</span><span class="wi-v">気づけばキャッシュ 11GB・campfire 動画 25GB・Downloads 20GB に肥大化</span>
         </div>
         <div class="work__insight">
-          <span class="wi-k">判断</span><span class="wi-v">Shell Script + cron + .command で「自動＆手動ワンクリック」を両立</span>
+          <span class="wi-k">判断</span><span class="wi-v">Shell Script + cron + .command で「自動＆手動ワンクリック」を両立。削除対象は都度精査して拡張</span>
         </div>
         <div class="work__insight">
-          <span class="wi-k">結果</span><span class="wi-v">初回 ~45GB 節約 · 毎週日曜 9:00 に自動実行中</span>
+          <span class="wi-k">結果</span><span class="wi-v">累計 ~70GB 節約 · 毎週日曜 9:00 に自動実行中（9ステップ）</span>
         </div>
         <div class="work__tags">
           <span>Shell Script</span><span>cron</span><span>macOS</span><span>自動化</span>
@@ -338,6 +338,35 @@
           <span class="work__year">2026</span>
           <div class="work__links">
             <a href="blog/mac-cleaner.html">Note ↗</a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="work work--small" aria-label="Threads Auto Poster">
+      <div class="work__cover" id="wc-10">
+        <div class="work__cover-overlay">
+          <div class="work__cover-num">W—10 / Bot</div>
+          <h3 class="work__cover-title">Threads Auto Poster</h3>
+        </div>
+      </div>
+      <div class="work__body">
+        <p class="work__desc">投資系 tips・note 記事を Threads に自動投稿するボット。投稿文を JSON で管理し、launchd で毎日 3 回（7:00 / 12:00 / 20:00）自動実行。Claude API 不使用・完全無料。</p>
+        <div class="work__insight">
+          <span class="wi-k">課題</span><span class="wi-v">note 記事や投資 tips を手動で Threads に投稿するのが面倒で継続できない</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">判断</span><span class="wi-v">Threads API + launchd で投稿を完全自動化。文章は JSON で事前管理</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">結果</span><span class="wi-v">毎日 3 回自動投稿中 · 重複防止・リトライ処理つき</span>
+        </div>
+        <div class="work__tags">
+          <span>Python</span><span>Threads API</span><span>launchd</span><span>自動化</span>
+        </div>
+        <div class="work__footer">
+          <span class="work__year">2026</span>
+          <div class="work__links">
           </div>
         </div>
       </div>

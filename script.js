@@ -201,6 +201,7 @@ addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; }
     { id: 'wc-7', chars: ['SSH','LAN','WAN','VPN','192','255','RTX','UDP','TCP','→','⇄','#'], color: [0,180,255] },
     { id: 'wc-8', chars: ['◎','○','▲','△','×','馬','競','予','測','A','I'], color: [255,195,0] },
     { id: 'wc-9', chars: ['rm','-rf','del','GB','MB','~/','bin','log','tmp','↓','[]','{}'], color: [125,211,252] },
+    { id: 'wc-10', chars: ['@','#','投','稿','自','動','→','↑','07','12','20','AM','PM'], color: [251,113,133] },
   ];
 
   const supportsOffscreen = typeof OffscreenCanvas !== 'undefined'
