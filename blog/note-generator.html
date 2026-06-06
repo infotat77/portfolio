@@ -6,6 +6,7 @@
   <title>Gemini API で Note 投資記事を自動生成するシステムを作った話 | Portfolio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="../style.css">
   <style>
     .nav {
@@ -401,16 +402,55 @@ Note の投資記事テーマとして最適なキーワードを1つ選んで�
 
     <h2>ファイル構成</h2>
     <pre><code>note-generator/
-├── generate.py   # キーワード指定で1記事生成
-├── auto.py       # RSSトレンドで自動生成
-├── save.py       # クリップボードから記事を保存
-├── run_auto.sh   # cron用ラッパー
-├── config.yaml   # モデル・デフォルト値の設定
-├── .env          # GEMINI_API_KEY
+├── generate.py    # キーワード指定で1記事生成
+├── auto.py        # RSSトレンドで自動生成
+├── thumbnail.py   # Pillowサムネイル生成
+├── save.py        # クリップボードから記事を保存
+├── run_auto.sh    # cron用ラッパー
+├── config.yaml    # モデル・デフォルト値の設定
+├── .env           # GEMINI_API_KEY
 ├── prompts/
-│   └── investment.md  # 記事生成プロンプトテンプレート
-├── output/       # 生成された記事（日付_キーワード.md）
-└── logs/         # cron実行ログ</code></pre>
+│   └── investment.md   # 記事生成プロンプトテンプレート
+├── output/        # 生成された記事（日付_キーワード.{md,png,txt}）
+└── logs/          # cron実行ログ</code></pre>
+
+    <h2>2026.06.03 アップデート</h2>
+    <p>
+      記事生成後のワークフローをさらに自動化しました。
+    </p>
+
+    <h3>デスクトップランチャー（.command）</h3>
+    <p>
+      ターミナルを開かずにダブルクリックで起動できる <code>.command</code> ファイルをデスクトップに配置しました。
+      メニューから「キーワード指定」か「今日のニュースから自動生成」を選択でき、
+      キーワードをそのまま入力すると記事生成に直行します。
+    </p>
+
+    <h3>Pillowによるサムネイル自動生成</h3>
+    <p>
+      記事生成と同時に、note.com のサムネイル用 PNG（1280×670px）を自動生成するようにしました。
+      ヒラギノ角ゴシックを使用した紺グラデーション背景＋ゴールドアクセントのデザインで、
+      タイトルを読点・スペースなどの自然な区切り位置で折り返し、フォントサイズはタイトル長に応じて自動調整します。
+    </p>
+    <p>
+      外部APIを使わずPillowのみで完結するため、追加コストなしで毎回生成されます。
+    </p>
+
+    <h3>Gemini 画像プロンプトの自動生成</h3>
+    <p>
+      記事内容をもとに、無料版 Gemini（gemini.google.com）に貼り付けるだけで
+      記事テーマに合った画像を生成できる英語プロンプトを自動生成し、<code>.txt</code> ファイルに保存します。
+    </p>
+
+    <div class="pipeline">
+      <span class="pipeline__step">記事生成（.md）</span>
+      <span class="pipeline__arrow">→</span>
+      <span class="pipeline__step">サムネイル生成（.png）</span>
+      <span class="pipeline__arrow">→</span>
+      <span class="pipeline__step">画像プロンプト生成（.txt）</span>
+      <span class="pipeline__arrow">→</span>
+      <span class="pipeline__step">3ファイルを自動で開く</span>
+    </div>
 
     <h2>ハマったこと</h2>
     <ul>
@@ -442,6 +482,7 @@ Note の投資記事テーマとして最適なキーワードを1つ選んで�
   <div class="article-tags">
     <span class="tag tag--sm">Python</span>
     <span class="tag tag--sm">Gemini API</span>
+    <span class="tag tag--sm">Pillow</span>
     <span class="tag tag--sm">RSS</span>
     <span class="tag tag--sm">cron</span>
     <span class="tag tag--sm">自動化</span>

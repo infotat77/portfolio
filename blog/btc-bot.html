@@ -6,6 +6,7 @@
   <title>PythonでBTC自動売買ボットを作った話 | Portfolio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="../style.css">
 <style>
   /* ── Blog nav override ── */
@@ -248,7 +249,7 @@
     <a href="../index.html#blog" class="article-back">← ブログ一覧に戻る</a>
 
     <div class="article-meta">
-      <span class="article-date">2026.06.03 updated</span>
+      <span class="article-date">2026.06.06 updated</span>
       <span class="article-tag">Python</span>
       <span class="article-tag">自動売買</span>
       <span class="article-tag">個人開発</span>
@@ -257,7 +258,7 @@
     <h1 class="article-title">PythonでBTC自動売買ボットを作った話</h1>
     <p class="article-lead">
       GMOコインのAPIを使って、テクニカル指標に基づくビットコイン自動売買ボットをゼロから開発しました。
-      11種のシグナル実装・Web管理画面・バックテスト機能・LINE通知・LaunchAgentによる常時稼働化まで、作って気づいたことをまとめます。
+      11種のシグナル・複数戦略の独立運用・バックテスト・LINE通知・実運用移行判断・BTC再投資自動化まで、作って気づいたことをまとめます。
     </p>
 
     <!-- チャートイラスト -->
@@ -346,7 +347,9 @@
         <tr><td>日次レポート</td><td>Gmail SMTP（smtplib）</td></tr>
         <tr><td>設定管理</td><td>config.json（Bot・Web間で共有）</td></tr>
         <tr><td>常時稼働</td><td>macOS LaunchAgent + Amphetamine</td></tr>
-        <tr><td>バックテスト</td><td>backtest.py（グリッドサーチ・手数料込み損益計算）</td></tr>
+        <tr><td>バックテスト</td><td>backtest.py（グリッドサーチ・手数料込み損益計算・週次自動実行）</td></tr>
+        <tr><td>トレード履歴</td><td>trades_{strategy}.json（戦略別永続化・Web UI表示）</td></tr>
+        <tr><td>BTC再投資</td><td>確定利益を自動でBTC買い増し（閾値設定可）</td></tr>
       </table>
 
       <h2>実装した11種のシグナル</h2>
@@ -377,17 +380,16 @@
 
       <h2>工夫した点</h2>
 
-      <h3>AND / OR条件による複数シグナル合成</h3>
+      <h3>4種類の複数戦略モード</h3>
       <p>
-        複数のストラテジーを組み合わせるAND・OR条件を実装しました。
-        ANDはすべてのシグナルが一致した時だけ発注するため精度が上がり、ORはどれか1つが反応した時に発注するため機会を増やせます。
-        Web UIからワンクリックで切り替えられます。
+        単体・AND・OR・independentの4モードをWeb UIから切り替えられます。
+        特に<strong>independentモード</strong>は各戦略が独立してポジションを持つため、戦略間の干渉なく同時運用できます。
       </p>
-      <pre><code># AND条件：全シグナルが一致した時だけ発注
+      <pre><code># ANDモード：全シグナルが一致した時だけ発注
 strategy = {"mode": "and", "strategies": ["rsi", "stochastic"]}
 
-# OR条件：どれか1つが反応したら発注
-strategy = {"mode": "or",  "strategies": ["rsi", "bb_reversal"]}</code></pre>
+# independentモード：各戦略が独立してポジション管理
+strategy = {"mode": "independent", "strategies": ["rsi", "stochastic"]}</code></pre>
 
       <h3>バックテストで時間足の重要性を発見</h3>
       <p>
@@ -402,10 +404,11 @@ strategy = {"mode": "or",  "strategies": ["rsi", "bb_reversal"]}</code></pre>
         <tr><td>1時間足</td><td><strong>全戦略プラス</strong></td><td>1取引あたりの利幅が手数料を上回る</td></tr>
       </table>
 
-      <h3>パフォーマンス指標の可視化</h3>
+      <h3>パフォーマンス指標と売買履歴の可視化</h3>
       <p>
         Web管理画面に勝率・最大ドローダウン・シャープレシオをリアルタイム表示しました。
-        トレード履歴は <code>trades.json</code> に永続化されるため、再起動後も指標が引き継がれます。
+        トレード履歴は戦略ごとに <code>trades_{strategy}.json</code> として永続化され、再起動後も引き継がれます。
+        各戦略ページには売買履歴テーブル（直近20件）も表示されます。
       </p>
 
       <h3>LINE通知（Messaging API）</h3>
@@ -432,12 +435,31 @@ strategy = {"mode": "or",  "strategies": ["rsi", "bb_reversal"]}</code></pre>
         MacBookの蓋を閉じてもスリープしないようAmphetamineと <code>pmset</code> を組み合わせて設定しています。
       </p>
 
+      <h3>実運用移行の自動判断</h3>
+      <p>
+        毎日21時にシミュレーション成績を自動チェックし、「取引20件以上・勝率55%以上・累計損益プラス」の3条件をすべて満たすとLINEで通知します。
+        感覚ではなくデータに基づいて実運用への切り替えタイミングを判断できます。
+      </p>
+
+      <h3>利益のBTC自動再投資</h3>
+      <p>
+        実運用時、累計利益が設定した閾値（デフォルト¥5,000）を超えると自動でBTCを買い増します。
+        JPY建ての利益をそのまま持つのではなく、BTC枚数として積み上げていく運用ができます。
+      </p>
+
+      <h3>週次バックテスト自動実行</h3>
+      <p>
+        cronで毎週日曜の朝7時にバックテストを自動実行し、結果をJSONで保存します。
+        相場環境の変化によって戦略の有効性が変わるため、定期的に再検証する仕組みを組み込みました。
+      </p>
+
       <h2>やってみてわかったこと</h2>
       <ul>
         <li>テクニカル指標はシンプルな数式の組み合わせで、自分で実装すると仕組みが深く理解できる</li>
         <li><strong>手数料を考慮しないバックテストは意味がない</strong>。5分足では手数料だけで月数百円の赤字になる</li>
         <li>時間足の選択がパラメーター調整より遥かに重要だった</li>
-        <li>一目均衡表は78本分のローソク足が必要で、データ取得の設計が意外と重要だった</li>
+        <li>independentモードにすると戦略間でシグナルが干渉しないため、より自然な運用ができる</li>
+        <li>「いつ実運用に切り替えるか」の基準をコードに落とし込むことで、感情的な判断を排除できる</li>
         <li>APIキーの管理（<code>.env</code> ファイル分離・環境変数化）はセキュリティの基本として徹底した</li>
       </ul>
 
@@ -445,7 +467,7 @@ strategy = {"mode": "or",  "strategies": ["rsi", "bb_reversal"]}</code></pre>
       <ul>
         <li>複数通貨ペアへの対応（ETH・XRP など）</li>
         <li>dry_run終了後の実運用移行と結果検証</li>
-        <li>バックテスト結果のWeb UI可視化</li>
+        <li>勝率連動のポジションサイジング（直近成績に応じてtrade_sizeを自動調整）</li>
       </ul>
 
     </div>
