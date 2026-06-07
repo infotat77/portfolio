@@ -94,7 +94,7 @@
 <section class="works" id="works">
   <div class="works__header">
     <span class="works__label">Works</span>
-    <span class="works__count">12 projects</span>
+    <span class="works__count">13 projects</span>
   </div>
 
   <div class="works__grid">
@@ -427,6 +427,35 @@
           <span class="work__year">2026</span>
           <div class="work__links">
             <a href="blog/tiktok-bot.html">Note ↗</a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="work work--small" aria-label="Soshina Clip Channel">
+      <div class="work__cover" id="wc-13">
+        <div class="work__cover-overlay">
+          <div class="work__cover-num">W—13 / Bot</div>
+          <h3 class="work__cover-title">Soshina Clip Channel</h3>
+        </div>
+      </div>
+      <div class="work__body">
+        <p class="work__desc">粗品の YouTube 動画を自動で切り抜き・投稿するパイプライン。Mac 側で yt-dlp により新着動画を DL → Google Drive アップ。Colab（T4 GPU）で Whisper 文字起こし → llama3.2 ハイライト抽出 → ffmpeg カット・字幕焼き込み → YouTube 非公開投稿まで全自動。</p>
+        <div class="work__insight">
+          <span class="wi-k">課題</span><span class="wi-v">切り抜き動画は手作業が多く、文字起こし・編集・投稿を毎回手動でやるのが続かない</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">判断</span><span class="wi-v">Mac + Google Colab（無料GPU）の2段構成で、課金ゼロで一気通貫パイプラインを構築</span>
+        </div>
+        <div class="work__insight">
+          <span class="wi-k">結果</span><span class="wi-v">cron 6時間ごと自動DL · Whisper small で日本語文字起こし · YouTube非公開投稿まで全自動</span>
+        </div>
+        <div class="work__tags">
+          <span>Python</span><span>yt-dlp</span><span>Whisper</span><span>ffmpeg</span><span>Google Colab</span><span>YouTube API</span><span>自動化</span>
+        </div>
+        <div class="work__footer">
+          <span class="work__year">2026</span>
+          <div class="work__links">
           </div>
         </div>
       </div>
