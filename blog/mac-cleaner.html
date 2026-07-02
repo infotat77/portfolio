@@ -256,7 +256,7 @@
   <a href="../index.html#notes" class="article-back">← Notes 一覧に戻る</a>
 
   <div class="article-meta">
-    <span class="article-date">2026.05.31 / 2026.06.06 更新</span>
+    <span class="article-date">2026.05.31 / 2026.07.02 更新</span>
     <span class="article-tag">Shell Script</span>
     <span class="article-tag">macOS</span>
     <span class="article-tag">自動化</span>
@@ -266,7 +266,7 @@
   <p class="article-lead">
     キャッシュ・スクリーンショット・古いインストーラーが気づけば数十GBに。
     Shell Script + cron + .command ファイルで「毎週自動＆手動ワンクリック」の両立を実現しました。
-    初回実行で約 45GB を節約。その後 PC 内を精査し削除対象を 5 → 9 ステップに拡張、累計 ~70GB 節約。
+    初回実行で約 45GB を節約。その後 PC 内を精査し削除対象を 5 → 10 ステップに拡張、累計 ~120GB 節約。
   </p>
 
   <div class="article-hero">
@@ -468,7 +468,7 @@ read -n 1</code></pre>
 
     <div class="metrics">
       <div class="metric">
-        <span class="metric__val">~70GB</span>
+        <span class="metric__val">~120GB</span>
         <span class="metric__label">累計節約容量</span>
       </div>
       <div class="metric">
@@ -476,7 +476,7 @@ read -n 1</code></pre>
         <span class="metric__label">自動実行（日曜9:00）</span>
       </div>
       <div class="metric">
-        <span class="metric__val">9steps</span>
+        <span class="metric__val">10steps</span>
         <span class="metric__label">クリーンアップ対象</span>
       </div>
     </div>
@@ -501,6 +501,33 @@ read -n 1</code></pre>
       削除対象は「使い終わったら自動で消えるべきもの」を基準に選定。
       判断が必要なもの（学習データ・開発用 node_modules など）は自動削除せず、手動で判断する運用を維持しています。
     </p>
+
+    <h2>v3 アップデート（2026-07-02）</h2>
+    <p>
+      Mac 全体のパフォーマンス改善と campfire クリーンアップのバグ修正を行い、さらに約 50GB を削減。削除対象を 10 ステップに拡張しました。
+    </p>
+
+    <h3>Mac パフォーマンス改善</h3>
+    <ul>
+      <li><strong>Adobe Creative Cloud 9デーモンを完全無効化</strong> — LaunchAgents・LaunchDaemons 合計9件を unload。起動時から常駐していたバックグラウンドプロセスを排除</li>
+      <li><strong>Spotlight インデックス修復</strong> — <code>unknown indexing state</code> エラーを解消し <code>mdutil -E</code> で再構築。mds プロセスの暴走が解消</li>
+      <li><strong>開発フォルダを Spotlight 除外</strong> — <code>node_modules</code>・<code>.git</code>・<code>dist</code>・<code>build</code>・<code>.vscode/extensions</code>・<code>.npm</code> などに <code>.metadata_never_index</code> を設置。mdworker が大量のコードをインデックスしなくなる</li>
+      <li><strong>[9] Spotlight 除外メンテナンスを自動化</strong> — 毎週日曜 9:00 に新規作成された node_modules 等を自動で除外対象に追加</li>
+    </ul>
+
+    <h3>campfire クリーンアップの修正・強化</h3>
+    <ul>
+      <li><strong>ログ参照バグを修正</strong> — スクリプトが <code>campfire_auto_post.log</code>（6月で止まった旧ログ）しか見ておらず、動画が全件スキップされていた。<code>campfire*.log</code> 横断検索に修正し、今後ログ名が変わっても追従</li>
+      <li><strong>.srt 字幕ファイルを削除対象に追加</strong> — 動画削除時に対応する字幕ファイルも同時削除。残留 .srt も対象</li>
+      <li><strong>[6b] _tmp 中間ファイルの自動削除</strong> — 動画生成の処理中間ファイル（norm_0.mp4〜・merged.mp4 等）が <code>_tmp/</code> に 27GB 放置されていた。毎週9時に前日分が完成済みのタイミングで自動削除</li>
+      <li><strong>[6b] campfire ログ整理</strong> — <code>stderr.log</code>（96MB）を直近1万行に切り詰め、古いローテートログ・旧 <code>campfire_auto_post.log</code> を削除</li>
+    </ul>
+
+    <h3>その他</h3>
+    <ul>
+      <li><strong>Downloads のスクリーンショットも削除対象に</strong> — [1] のスクリーンショット削除に ~/Downloads を追加</li>
+      <li><strong>今回の手動削除実績</strong> — campfire 動画 ~16GB・_tmp 27GB・Adobe ログ 1.4GB・Chrome Service Worker 3.4GB・Claude Desktop キャッシュ 720MB など合計 ~50GB を削除</li>
+    </ul>
 
     <h2>やってみてわかったこと</h2>
     <ul>
