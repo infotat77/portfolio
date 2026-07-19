@@ -256,7 +256,7 @@
   <a href="../index.html#notes" class="article-back">← Notes 一覧に戻る</a>
 
   <div class="article-meta">
-    <span class="article-date">2026.05.31 / 2026.07.02 更新</span>
+    <span class="article-date">2026.05.31 / 2026.07.19 更新</span>
     <span class="article-tag">Shell Script</span>
     <span class="article-tag">macOS</span>
     <span class="article-tag">自動化</span>
@@ -476,7 +476,7 @@ read -n 1</code></pre>
         <span class="metric__label">自動実行（日曜9:00）</span>
       </div>
       <div class="metric">
-        <span class="metric__val">10steps</span>
+        <span class="metric__val">11steps</span>
         <span class="metric__label">クリーンアップ対象</span>
       </div>
     </div>
@@ -527,6 +527,16 @@ read -n 1</code></pre>
     <ul>
       <li><strong>Downloads のスクリーンショットも削除対象に</strong> — [1] のスクリーンショット削除に ~/Downloads を追加</li>
       <li><strong>今回の手動削除実績</strong> — campfire 動画 ~16GB・_tmp 27GB・Adobe ログ 1.4GB・Chrome Service Worker 3.4GB・Claude Desktop キャッシュ 720MB など合計 ~50GB を削除</li>
+    </ul>
+
+    <h2>v4 アップデート（2026-07-19）</h2>
+    <p>
+      PC 全体を再スキャンし、cleanup.sh の対象外だった残骸を発見・削除。[2b] を新設して IDE キャッシュの定期整理を自動化しました。
+    </p>
+    <ul>
+      <li><strong>Adobe GrowthSDK 残骸（404MB）を削除</strong> — Creative Cloud 無効化後も Group Containers に残っていたデータを一掃</li>
+      <li><strong>Tweetie2 残骸（114MB）を削除</strong> — 廃止された Twitter クライアントの Group Container がそのまま残存していた</li>
+      <li><strong>[2b] IDE・開発キャッシュクリアを追加</strong> — VSCode のログセッション・CachedExtensionVSIXs（30日以上前）と venv 内 <code>__pycache__</code>（毎週削除・自動再生成）を対象に。旧バージョンの拡張機能インストーラが蓄積しやすく、放置すると200MB超になる</li>
     </ul>
 
     <h2>やってみてわかったこと</h2>
