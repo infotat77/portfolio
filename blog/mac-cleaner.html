@@ -256,7 +256,7 @@
   <a href="../index.html#notes" class="article-back">← Notes 一覧に戻る</a>
 
   <div class="article-meta">
-    <span class="article-date">2026.05.31 / 2026.07.19 更新</span>
+    <span class="article-date">2026.05.31 / 2026.07.26 更新</span>
     <span class="article-tag">Shell Script</span>
     <span class="article-tag">macOS</span>
     <span class="article-tag">自動化</span>
@@ -266,7 +266,7 @@
   <p class="article-lead">
     キャッシュ・スクリーンショット・古いインストーラーが気づけば数十GBに。
     Shell Script + cron + .command ファイルで「毎週自動＆手動ワンクリック」の両立を実現しました。
-    初回実行で約 45GB を節約。その後 PC 内を精査し削除対象を 5 → 10 ステップに拡張、累計 ~120GB 節約。
+    初回実行で約 45GB を節約。その後 PC 内を精査し削除対象を 5 → 11 ステップに拡張、累計 ~123GB 節約。
   </p>
 
   <div class="article-hero">
@@ -468,7 +468,7 @@ read -n 1</code></pre>
 
     <div class="metrics">
       <div class="metric">
-        <span class="metric__val">~120GB</span>
+        <span class="metric__val">~123GB</span>
         <span class="metric__label">累計節約容量</span>
       </div>
       <div class="metric">
@@ -538,6 +538,24 @@ read -n 1</code></pre>
       <li><strong>Tweetie2 残骸（114MB）を削除</strong> — 廃止された Twitter クライアントの Group Container がそのまま残存していた</li>
       <li><strong>[2b] IDE・開発キャッシュクリアを追加</strong> — VSCode のログセッション・CachedExtensionVSIXs（30日以上前）と venv 内 <code>__pycache__</code>（毎週削除・自動再生成）を対象に。旧バージョンの拡張機能インストーラが蓄積しやすく、放置すると200MB超になる</li>
     </ul>
+
+    <h2>v5 アップデート（2026-07-26）</h2>
+    <p>
+      PC 全体を改めてスキャンし、Homebrew formula・Applications・~/.local まで含めた包括的な棚卸しを実施。
+      今回は約 2.7GB を手動削除し、将来の蓄積を自動で抑える仕組みを追加しました。
+    </p>
+    <ul>
+      <li><strong>llvm（1.7GB）を削除</strong> — インストール済みの全 formula に対して依存チェックを行い、参照元が 0 件だったため削除。連鎖で z3（35MB）も自動撤去</li>
+      <li><strong>python@3.11（64MB）を削除</strong> — python@3.14 と重複インストールされていた旧バージョン。依存 formula なしを確認してから撤去</li>
+      <li><strong>Zed（~410MB）を削除</strong> — バックグラウンドで常駐していたエディタ。アプリ本体＋Application Support・Caches・Logs を一括削除</li>
+      <li><strong>Claude Code 旧バージョン（432MB）を削除</strong> — <code>~/.local/share/claude/versions/</code> に古いバイナリが 2 本放置されていた（2.1.152・2.1.154）。最新の 1 件だけを保持</li>
+      <li><strong>Homebrew cleanup（160MB）</strong> — 古い formula バージョンの残骸を一掃</li>
+      <li><strong>[2b] Claude Code 旧バージョン自動削除を追加</strong> — 毎週日曜に最新バイナリ以外を自動削除。アップデートのたびに旧バージョンが蓄積するのを防ぐ</li>
+    </ul>
+    <p>
+      今回の棚卸しで判明したのは「一度インストールして使わなくなった formula が静かに居座り続ける」という傾向。
+      <code>brew uses --installed &lt;name&gt;</code> で依存関係を確認してから削除するのが安全な手順。
+    </p>
 
     <h2>やってみてわかったこと</h2>
     <ul>
